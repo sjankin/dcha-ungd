@@ -51,9 +51,9 @@
 \begin{document}
 
 \begin{abstract}
-Reliable discourse indicators are a core input to decision-making in domains such as climate and health, yet most scalable measures still rely on co-occurrence or lexical proximity. These proxies cannot distinguish a mere co-mention of ``health'' and ``climate change'' from an asserted causal linkage, cannot recover directionality (climate $\rightarrow$ health versus health $\rightarrow$ climate action), and cannot separate harms from co-benefits. We present DCHA-UNGD (v2.0), an extended dataset and benchmark suite for Directed Climate--Health Attribution (DCHA) in elite political speech.
+Reliable discourse indicators are a core input to decision-making in domains such as climate and health, yet most scalable measures still rely on co-occurrence or lexical proximity. These proxies cannot distinguish a mere co-mention of ``health'' and ``climate change'' from an asserted causal linkage, cannot recover directionality (climate $\rightarrow$ health versus health $\rightarrow$ climate action), and cannot separate harms from co-benefits. We present DCHA-UNGD (v1.0), an extended dataset and benchmark suite for Directed Climate--Health Attribution (DCHA) in elite political speech.
 
-DCHA-UNGD v2.0 extends the original 2014--2024 dataset back to 1989, covering 36 years of UN General Debate speeches (6,662 speeches from 200 member states). The extended dataset contains 907 candidate sentences with hierarchical annotations for attribution, spans, and directed linkage type. We introduce a negative control experiment using 5,000 pre-1989 sentences---a period predating climate-health discourse---to test whether frontier LLMs hallucinate causal claims where none should exist. Results reveal a striking asymmetry: while LLMs produce substantial false positives for attribution detection (1--29\%), the false positive rate for the derived DCHA indicator is near-zero ($\leq$0.1\%) across all models. This demonstrates that the two-stage DCHA construct---requiring both causal attribution \emph{and} directed climate-to-health span matching---provides an inherent safeguard against hallucination. Baselines show that fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while speech-level co-mention overestimates directed climate--health attribution by 91\%.
+DCHA-UNGD v1.0 extends the original 2014--2024 dataset back to 1989, covering 36 years of UN General Debate speeches (6,662 speeches from 200 member states). The extended dataset contains 907 candidate sentences with hierarchical annotations for attribution, spans, and directed linkage type. We introduce a negative control experiment using 5,000 pre-1989 sentences---a period predating climate-health discourse---to test whether frontier LLMs hallucinate causal claims where none should exist. Results reveal a striking asymmetry: while LLMs produce substantial false positives for attribution detection (1--29\%), the false positive rate for the derived DCHA indicator is near-zero ($\leq$0.1\%) across all models. This demonstrates that the two-stage DCHA construct---requiring both causal attribution \emph{and} directed climate-to-health span matching---provides an inherent safeguard against hallucination. Baselines show that fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while speech-level co-mention overestimates directed climate--health attribution by 91\%.
 
 We release annotated sentences, model-assisted pre-annotations, annotation guidelines, evaluation toolkit, and negative control data to support reuse beyond climate and health.\footnote{Code and data: \url{https://github.com/sjankin/dcha-ungd}}
 \end{abstract}
@@ -74,10 +74,10 @@ A co-mention indicator treats these identically, yet only (b) asserts a causal c
 
 Extending to the full 1989--2024 period amplifies this problem: of 700 speeches containing within-sentence climate-health co-mentions, only 66 (9.4\%) contain directed climate$\rightarrow$health attribution---a 91\% overcount if co-mention is used as a proxy for causal framing.
 
-This paper makes two contributions beyond the original DCHA-UNGD (v1.0) dataset covering 2014--2024. First, we extend the annotated dataset back to 1989, adding 153 candidates from a period when climate-health discourse was nascent. This tripling of the temporal window enables studying the \emph{emergence} of climate-health framing in international diplomacy. Second, we introduce a negative control experiment: 5,000 sentences from pre-1989 speeches (1946--1988) are processed through frontier LLMs to measure false positive rates. Because climate-health attribution is anachronistic before 1989, any positive prediction constitutes a hallucination.
+This paper makes two contributions beyond an initial pilot dataset covering 2014--2024. First, we extend the annotated dataset back to 1989, adding 153 candidates from a period when climate-health discourse was nascent. This tripling of the temporal window enables studying the \emph{emergence} of climate-health framing in international diplomacy. Second, we introduce a negative control experiment: 5,000 sentences from pre-1989 speeches (1946--1988) are processed through frontier LLMs to measure false positive rates. Because climate-health attribution is anachronistic before 1989, any positive prediction constitutes a hallucination.
 
 \paragraph{Contributions.}
-DCHA-UNGD v2.0 makes six contributions: (1) an extended dataset spanning 1989--2024 with 907 annotated candidates; (2) a negative control protocol using 5,000 pre-1989 sentences to validate LLM specificity; (3) the finding that DCHA's two-stage construct provides near-zero false positive rates even when attribution detection alone has substantial false positives; (4) updated benchmarks with frontier LLMs (DeepSeek-R1, GPT-5.2, Claude Opus 4.5) evaluated on the full candidate set; (5) chronological splits designed to test temporal generalisation over a 36-year window; and (6) construct validation demonstrating that DCHA measures a distinct phenomenon from co-mention, with different covariate predictors.
+DCHA-UNGD v1.0 makes six contributions: (1) an extended dataset spanning 1989--2024 with 907 annotated candidates; (2) a negative control protocol using 5,000 pre-1989 sentences to validate LLM specificity; (3) the finding that DCHA's two-stage construct provides near-zero false positive rates even when attribution detection alone has substantial false positives; (4) updated benchmarks with frontier LLMs (DeepSeek-R1, GPT-5.2, Claude Opus 4.5) evaluated on the full candidate set; (5) chronological splits designed to test temporal generalisation over a 36-year window; and (6) construct validation demonstrating that DCHA measures a distinct phenomenon from co-mention, with different covariate predictors.
 
 \section{Related Work}
 Our work connects three research strands: political text-as-data methods, scholarship on causal framing in policy discourse, and NLP datasets for causal relation extraction.
@@ -110,7 +110,7 @@ RECESS~\cite{tan2023recess} & News & 2,500 & \checkmark & -- & -- & -- \\
 SemEval-23~\cite{khetan2023semeval} & General & 1,331 & \checkmark & -- & -- & -- \\
 PolitiCAUSE~\cite{garcia-corral-etal-2024-politicause} & Political & 2,466$^{*}$ & \checkmark & -- & -- & -- \\
 \midrule
-DCHA-UNGD v2.0 & Political & 907 & \checkmark & \checkmark & \checkmark & \checkmark \\
+DCHA-UNGD v1.0 & Political & 907 & \checkmark & \checkmark & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
 \vspace{1mm}
@@ -126,7 +126,7 @@ We draw on the UN General Debate corpus~\cite{baturo2017ungdc,jankin2025words}. 
 We segment speeches into sentences using NLTK's Punkt tokenizer~\cite{bird2009nlp}. We retain offsets to enable traceability from candidate sentences back to the original speech text.
 
 \subsection{Lexicons and candidate extraction}
-Candidate selection mirrors common indicator practice: we identify \emph{within-sentence} co-mentions of a climate lexicon (DC) and a health lexicon (DH), adapted from Lancet Countdown work~\cite{romanello2025lancet}. A sentence is a candidate if it contains at least one DC term and at least one DH term. This yields 907 candidate sentences from the 1989--2024 period, of which 754 come from 2014--2024 (matching v1.0) and 153 from 1989--2013.
+Candidate selection mirrors common indicator practice: we identify \emph{within-sentence} co-mentions of a climate lexicon (DC) and a health lexicon (DH), adapted from Lancet Countdown work~\cite{romanello2025lancet}. A sentence is a candidate if it contains at least one DC term and at least one DH term. This yields 907 candidate sentences from the 1989--2024 period, of which 754 come from 2014--2024 and 153 from the newly covered 1989--2013 period.
 
 The lexicons contain 34 DC terms (e.g., ``climate change'', ``global warming'') and 28 DH terms (e.g., ``health'', ``disease'', ``mortality''). Full lexicons appear in Appendix~\ref{app:lexicons}.
 
@@ -171,7 +171,7 @@ To assess annotation quality, a second expert annotator independently coded a ra
 \section{Dataset Description}
 
 \subsection{Release artefacts}
-DCHA-UNGD (v2.0) is released at \url{https://github.com/sjankin/dcha-ungd} and contains:
+DCHA-UNGD (v1.0) is released at \url{https://github.com/sjankin/dcha-ungd} and contains:
 \begin{itemize}[leftmargin=*,nosep]
 \item \texttt{dcha\_ungd\_candidates.csv}: 907 candidates with gold labels (1989--2024);
 \item \texttt{dcha\_ungd\_negative\_control.csv}: 5,000 pre-1989 candidates for negative control;
@@ -187,7 +187,7 @@ DCHA-UNGD (v2.0) is released at \url{https://github.com/sjankin/dcha-ungd} and c
 Table~\ref{tab:stats} reports high-level counts for both the annotated dataset and the negative control corpus.
 
 \begin{table}[t]
-\caption{Summary statistics for DCHA-UNGD (v2.0).}
+\caption{Summary statistics for DCHA-UNGD (v1.0).}
 \label{tab:stats}
 \begin{tabular}{@{}l r@{}}
 \toprule
@@ -532,7 +532,7 @@ The inter-annotator agreement study ($\kappa=0.42$) reflects the genuine difficu
 The dataset is derived from publicly available UN speech transcripts~\cite{baturo2017ungdc,jankin2025words}. We release under CC BY 4.0 with code under MIT License.
 
 \section{Conclusion}
-DCHA-UNGD v2.0 extends the original dataset to 1989--2024, tripling the temporal window. Two findings stand out. First, the negative control experiment demonstrates that DCHA's two-stage construct provides an inherent safeguard against LLM hallucination: DCHA false positive rates remain below 0.1\% even when attribution false positives reach 29\%. This suggests that hierarchical indicator designs---combining coarse detection with domain-specific classification---may broadly improve the reliability of text-as-data measures. Second, fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while construct validation confirms that DCHA captures substantively different information than co-mention across the full 36-year window. We release the extended dataset, negative control corpus, and evaluation toolkit to support both NLP benchmarking and policy indicator development.
+DCHA-UNGD v1.0 extends the original dataset to 1989--2024, tripling the temporal window. Two findings stand out. First, the negative control experiment demonstrates that DCHA's two-stage construct provides an inherent safeguard against LLM hallucination: DCHA false positive rates remain below 0.1\% even when attribution false positives reach 29\%. This suggests that hierarchical indicator designs---combining coarse detection with domain-specific classification---may broadly improve the reliability of text-as-data measures. Second, fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while construct validation confirms that DCHA captures substantively different information than co-mention across the full 36-year window. We release the extended dataset, negative control corpus, and evaluation toolkit to support both NLP benchmarking and policy indicator development.
 
 \begin{acks}
 This project has received funding from the European Union's Horizon Europe research and innovation program under Grant Agreement No 101057131, Climate Action To Advance HeaLthY Societies in Europe (CATALYSE).
@@ -577,7 +577,7 @@ All continuous covariates are log-transformed (ln) before standardisation to red
 \label{app:llm}
 
 \subsection{Models}
-We evaluate frontier LLMs in two rounds. For the test-set comparison (\S7), we use models from v1.0: DeepSeek-R1, GPT-5.2, and Claude Opus 4. For the extended full-dataset evaluation (\S9), we use updated models: DeepSeek-R1 (\texttt{deepseek-reasoner}), GPT-5.2 (\texttt{gpt-5.2}), and Claude Opus 4.5 (\texttt{claude-opus-4-5-20251101}). All models are accessed via their respective APIs. A fourth model, Google Gemini 3 Pro Preview, was included in v1.0 but excluded from the extended evaluation due to API quota failures affecting 95.8\% of calls (5,657/5,907).
+We evaluate frontier LLMs in two rounds. For the test-set comparison (\S7), we use: DeepSeek-R1, GPT-5.2, and Claude Opus 4. For the extended full-dataset evaluation (\S9), we use updated models: DeepSeek-R1 (\texttt{deepseek-reasoner}), GPT-5.2 (\texttt{gpt-5.2}), and Claude Opus 4.5 (\texttt{claude-opus-4-5-20251101}). All models are accessed via their respective APIs. A fourth model, Google Gemini 3 Pro Preview, was tested in a pilot study but excluded from the full evaluation due to API quota failures affecting 95.8\% of calls (5,657/5,907).
 
 \subsection{Prompt design}
 We use structured JSON output with a schema specifying: (i) \texttt{has\_causal\_claim} (boolean); (ii) \texttt{cause\_span} (string); (iii) \texttt{effect\_span} (string); (iv) \texttt{link\_type} (enum). The system prompt provides task definitions and the five-way linkage type taxonomy. We set temperature=0 for deterministic outputs.
@@ -606,7 +606,7 @@ The user prompt provides the sentence and requests JSON output with fields: \tex
 For the extended evaluation, we process all 907 post-1989 candidates plus 5,000 pre-1989 negative control sentences in a single combined run ($N=5{,}907$). This design provides: (i) comprehensive performance estimates across the full temporal range; (ii) negative control false positive rates; and (iii) efficient token usage by processing all candidates in one pass. We report post-1989 performance metrics and pre-1989 false positive rates separately.
 
 \subsection{Variants}
-We test two variants: (i) \emph{zero-shot}: schema and instructions only; (ii) \emph{few-shot}: three annotated examples from the training set. Few-shot examples cover positive and negative cases across linkage types. For the extended evaluation, DeepSeek-R1 and GPT-5.2 use few-shot prompting; Claude Opus 4.5 uses zero-shot, as few-shot prompting was found to slightly degrade performance in v1.0.
+We test two variants: (i) \emph{zero-shot}: schema and instructions only; (ii) \emph{few-shot}: three annotated examples from the training set. Few-shot examples cover positive and negative cases across linkage types. For the extended evaluation, DeepSeek-R1 and GPT-5.2 use few-shot prompting; Claude Opus 4.5 uses zero-shot, as few-shot prompting was found to slightly degrade its performance in pilot experiments.
 
 \subsection{Few-shot examples}
 The few-shot variant uses five training examples covering all linkage types:
@@ -620,7 +620,7 @@ The few-shot variant uses five training examples covering all linkage types:
 \end{enumerate}
 
 \subsection{Reliability}
-Table~\ref{tab:llm_reliability} reports output reliability. DeepSeek-R1, GPT-5.2, and Claude Opus 4.5 produce valid JSON for all inputs. Gemini 3 Pro (tested in v1.0 only) showed 32.7\% invalid outputs.
+Table~\ref{tab:llm_reliability} reports output reliability. DeepSeek-R1, GPT-5.2, and Claude Opus 4.5 produce valid JSON for all inputs. Gemini 3 Pro (tested in pilot only) showed 32.7\% invalid outputs.
 
 \begin{table}[h]
 \caption{LLM output reliability.}
@@ -633,7 +633,7 @@ Model & Invalid JSON (\%) & Empty Response (\%) \\
 DeepSeek-R1 & 0.0 & 0.0 \\
 GPT-5.2 & 0.0 & 0.0 \\
 Claude Opus 4/4.5 & 0.0 & 0.0 \\
-Gemini 3 Pro (v1.0) & 32.7 & 32.7 \\
+Gemini 3 Pro (pilot) & 32.7 & 32.7 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -815,7 +815,7 @@ Intended for: benchmarking causal extraction on political text; domain transfer 
 Data: CC BY 4.0. Code: MIT License. GitHub repository with DOI.
 
 \subsection{Maintenance}
-Annual updates planned as new UNGD speeches become available. Current version: v2.0. Contact: corresponding author.
+Annual updates planned as new UNGD speeches become available. Current version: v1.0. Contact: corresponding author.
 
 \section{Full Lexicons}
 \label{app:lexicons}

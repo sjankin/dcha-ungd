@@ -1,0 +1,44 @@
+# Credentials
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Run artifacts (not tracked)
+runs/*/raw_responses.jsonl
+runs/*/run_log.jsonl
+runs/*/cost_latency.csv
+runs/*/failures.jsonl
+runs/*.log
+runs/running_pids.txt
+runs/progress_log.txt
+runs/hourly_progress.log
+
+# Model weights (too large for git)
+*.pt
+*.bin
+*.safetensors
+checkpoint-*/
+
+# Claude Code
+.claude/
+.DS_Store

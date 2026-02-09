@@ -1,0 +1,335 @@
+{
+  "gpt5.2_fewshot": {
+    "display_name": "GPT-5.2",
+    "variant": "fewshot",
+    "negative_control": {
+      "n": 5000,
+      "attrib_fp": 1427,
+      "attrib_fp_rate": 0.2854,
+      "dcha_fp": 0,
+      "dcha_fp_rate": 0.0,
+      "fp_by_decade": {
+        "1940s": {
+          "n": 112,
+          "fp": 29,
+          "fp_rate": 0.2589
+        },
+        "1950s": {
+          "n": 589,
+          "fp": 178,
+          "fp_rate": 0.3022
+        },
+        "1960s": {
+          "n": 1265,
+          "fp": 354,
+          "fp_rate": 0.2798
+        },
+        "1970s": {
+          "n": 1451,
+          "fp": 415,
+          "fp_rate": 0.286
+        },
+        "1980s": {
+          "n": 1583,
+          "fp": 451,
+          "fp_rate": 0.2849
+        }
+      }
+    },
+    "extended_benchmark": {
+      "n": 907,
+      "task_a": {
+        "precision": 0.745,
+        "recall": 0.701,
+        "f1": 0.722
+      },
+      "task_e": {
+        "precision": 0.672,
+        "recall": 0.672,
+        "f1": 0.672
+      },
+      "task_d": {
+        "NO_CAUSAL_EXTRACTION": {
+          "precision": 0.853,
+          "recall": 0.879,
+          "f1": 0.866,
+          "gold_count": 603,
+          "pred_count": 621
+        },
+        "OTHER_UNCLEAR": {
+          "precision": 0.64,
+          "recall": 0.592,
+          "f1": 0.615,
+          "gold_count": 240,
+          "pred_count": 222
+        },
+        "C2H_HARM": {
+          "precision": 0.679,
+          "recall": 0.731,
+          "f1": 0.704,
+          "gold_count": 52,
+          "pred_count": 56
+        },
+        "C2H_COBEN": {
+          "precision": 0.667,
+          "recall": 0.571,
+          "f1": 0.615,
+          "gold_count": 7,
+          "pred_count": 6
+        },
+        "H2C_JUST": {
+          "precision": 0.5,
+          "recall": 0.2,
+          "f1": 0.286,
+          "gold_count": 5,
+          "pred_count": 2
+        }
+      },
+      "sensitivity": 0.701,
+      "specificity": 0.715,
+      "f1_by_period": {
+        "1989-2013": {
+          "n": 153,
+          "f1": 0.753
+        },
+        "2014-2021": {
+          "n": 479,
+          "f1": 0.705
+        },
+        "2022": {
+          "n": 125,
+          "f1": 0.685
+        },
+        "2023-2024": {
+          "n": 150,
+          "f1": 0.768
+        }
+      }
+    },
+    "notes": {
+      "gemini_excluded": "Gemini 3 Pro excluded: 95.8% API quota failures (5657/5907)"
+    }
+  },
+  "deepseek_r1_fewshot": {
+    "display_name": "DeepSeek R1",
+    "variant": "fewshot",
+    "negative_control": {
+      "n": 5000,
+      "attrib_fp": 991,
+      "attrib_fp_rate": 0.1982,
+      "dcha_fp": 1,
+      "dcha_fp_rate": 0.0002,
+      "fp_by_decade": {
+        "1940s": {
+          "n": 112,
+          "fp": 16,
+          "fp_rate": 0.1429
+        },
+        "1950s": {
+          "n": 589,
+          "fp": 126,
+          "fp_rate": 0.2139
+        },
+        "1960s": {
+          "n": 1265,
+          "fp": 228,
+          "fp_rate": 0.1802
+        },
+        "1970s": {
+          "n": 1451,
+          "fp": 307,
+          "fp_rate": 0.2116
+        },
+        "1980s": {
+          "n": 1583,
+          "fp": 314,
+          "fp_rate": 0.1984
+        }
+      }
+    },
+    "extended_benchmark": {
+      "n": 907,
+      "task_a": {
+        "precision": 0.712,
+        "recall": 0.674,
+        "f1": 0.693
+      },
+      "task_e": {
+        "precision": 0.505,
+        "recall": 0.766,
+        "f1": 0.609
+      },
+      "task_d": {
+        "NO_CAUSAL_EXTRACTION": {
+          "precision": 0.84,
+          "recall": 0.862,
+          "f1": 0.851,
+          "gold_count": 603,
+          "pred_count": 619
+        },
+        "OTHER_UNCLEAR": {
+          "precision": 0.639,
+          "recall": 0.508,
+          "f1": 0.566,
+          "gold_count": 240,
+          "pred_count": 191
+        },
+        "C2H_HARM": {
+          "precision": 0.606,
+          "recall": 0.827,
+          "f1": 0.699,
+          "gold_count": 52,
+          "pred_count": 71
+        },
+        "C2H_COBEN": {
+          "precision": 0.455,
+          "recall": 0.714,
+          "f1": 0.556,
+          "gold_count": 7,
+          "pred_count": 11
+        },
+        "H2C_JUST": {
+          "precision": 0.067,
+          "recall": 0.2,
+          "f1": 0.1,
+          "gold_count": 5,
+          "pred_count": 15
+        }
+      },
+      "sensitivity": 0.674,
+      "specificity": 0.802,
+      "f1_by_period": {
+        "1989-2013": {
+          "n": 153,
+          "f1": 0.737
+        },
+        "2014-2021": {
+          "n": 479,
+          "f1": 0.677
+        },
+        "2022": {
+          "n": 125,
+          "f1": 0.646
+        },
+        "2023-2024": {
+          "n": 150,
+          "f1": 0.727
+        }
+      }
+    },
+    "notes": {
+      "gemini_excluded": "Gemini 3 Pro excluded: 95.8% API quota failures (5657/5907)"
+    }
+  },
+  "claude_opus4.5_zeroshot": {
+    "display_name": "Claude Opus 4.5",
+    "variant": "zeroshot",
+    "negative_control": {
+      "n": 5000,
+      "attrib_fp": 52,
+      "attrib_fp_rate": 0.0104,
+      "dcha_fp": 5,
+      "dcha_fp_rate": 0.001,
+      "fp_by_decade": {
+        "1940s": {
+          "n": 112,
+          "fp": 2,
+          "fp_rate": 0.0179
+        },
+        "1950s": {
+          "n": 589,
+          "fp": 3,
+          "fp_rate": 0.0051
+        },
+        "1960s": {
+          "n": 1265,
+          "fp": 12,
+          "fp_rate": 0.0095
+        },
+        "1970s": {
+          "n": 1451,
+          "fp": 15,
+          "fp_rate": 0.0103
+        },
+        "1980s": {
+          "n": 1583,
+          "fp": 20,
+          "fp_rate": 0.0126
+        }
+      }
+    },
+    "extended_benchmark": {
+      "n": 907,
+      "task_a": {
+        "precision": 0.729,
+        "recall": 0.408,
+        "f1": 0.523
+      },
+      "task_e": {
+        "precision": 0.406,
+        "recall": 0.812,
+        "f1": 0.542
+      },
+      "task_d": {
+        "NO_CAUSAL_EXTRACTION": {
+          "precision": 0.756,
+          "recall": 0.924,
+          "f1": 0.831,
+          "gold_count": 603,
+          "pred_count": 737
+        },
+        "OTHER_UNCLEAR": {
+          "precision": 0.619,
+          "recall": 0.108,
+          "f1": 0.184,
+          "gold_count": 240,
+          "pred_count": 42
+        },
+        "C2H_HARM": {
+          "precision": 0.416,
+          "recall": 0.904,
+          "f1": 0.57,
+          "gold_count": 52,
+          "pred_count": 113
+        },
+        "C2H_COBEN": {
+          "precision": 0.286,
+          "recall": 0.571,
+          "f1": 0.381,
+          "gold_count": 7,
+          "pred_count": 14
+        },
+        "H2C_JUST": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "gold_count": 5,
+          "pred_count": 1
+        }
+      },
+      "sensitivity": 0.408,
+      "specificity": 0.99,
+      "f1_by_period": {
+        "1989-2013": {
+          "n": 153,
+          "f1": 0.683
+        },
+        "2014-2021": {
+          "n": 479,
+          "f1": 0.492
+        },
+        "2022": {
+          "n": 125,
+          "f1": 0.444
+        },
+        "2023-2024": {
+          "n": 150,
+          "f1": 0.511
+        }
+      }
+    },
+    "notes": {
+      "gemini_excluded": "Gemini 3 Pro excluded: 95.8% API quota failures (5657/5907)"
+    }
+  }
+}

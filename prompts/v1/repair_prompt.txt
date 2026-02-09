@@ -1,0 +1,5 @@
+Your previous output was invalid.
+
+Fix and return ONLY ONE valid JSON object matching the schema.
+Spans must be exact substrings of the provided sentence (no paraphrase).
+If attrib=false then spans must be null and link_type must be NO_CAUSAL_EXTRACTION.

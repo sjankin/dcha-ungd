@@ -1,0 +1,321 @@
+{
+  "_description": "Extended dataset statistics (1989-2024)",
+  "_source": "data/benchmark/dcha_ungd_extended_v1/candidates_gold.csv",
+  "n_candidates": 907,
+  "n_attrib": 304,
+  "n_dcha_sentences": 72,
+  "link_type_distribution": {
+    "NO_CAUSAL_EXTRACTION": 603,
+    "OTHER_UNCLEAR": 240,
+    "C2H_HARM": 52,
+    "C2H_COBEN": 7,
+    "H2C_JUST": 5
+  },
+  "n_no_causal": 603,
+  "n_other_unclear": 240,
+  "n_c2h_harm": 52,
+  "n_c2h_coben": 7,
+  "n_h2c_just": 5,
+  "pct_no_causal": 66.5,
+  "pct_other_unclear": 26.5,
+  "pct_c2h_harm": 5.7,
+  "pct_directed": 7.1,
+  "n_train": 632,
+  "train_n_attrib": 212,
+  "train_n_dcha": 56,
+  "n_dev": 125,
+  "dev_n_attrib": 33,
+  "dev_n_dcha": 3,
+  "n_test": 150,
+  "test_n_attrib": 59,
+  "test_n_dcha": 13,
+  "year_distribution": {
+    "1989": {
+      "attrib": 2,
+      "dcha": 1,
+      "total": 3
+    },
+    "1991": {
+      "attrib": 1,
+      "dcha": 1,
+      "total": 1
+    },
+    "1995": {
+      "attrib": 1,
+      "dcha": 0,
+      "total": 3
+    },
+    "1996": {
+      "attrib": 1,
+      "dcha": 1,
+      "total": 2
+    },
+    "1997": {
+      "attrib": 1,
+      "dcha": 1,
+      "total": 2
+    },
+    "1998": {
+      "attrib": 1,
+      "dcha": 0,
+      "total": 1
+    },
+    "1999": {
+      "attrib": 1,
+      "dcha": 0,
+      "total": 2
+    },
+    "2000": {
+      "attrib": 2,
+      "dcha": 0,
+      "total": 2
+    },
+    "2001": {
+      "attrib": 1,
+      "dcha": 1,
+      "total": 1
+    },
+    "2002": {
+      "attrib": 1,
+      "dcha": 1,
+      "total": 1
+    },
+    "2003": {
+      "attrib": 2,
+      "dcha": 1,
+      "total": 4
+    },
+    "2004": {
+      "attrib": 1,
+      "dcha": 0,
+      "total": 5
+    },
+    "2005": {
+      "attrib": 1,
+      "dcha": 0,
+      "total": 3
+    },
+    "2006": {
+      "attrib": 2,
+      "dcha": 2,
+      "total": 4
+    },
+    "2007": {
+      "attrib": 6,
+      "dcha": 1,
+      "total": 14
+    },
+    "2008": {
+      "attrib": 5,
+      "dcha": 2,
+      "total": 16
+    },
+    "2009": {
+      "attrib": 8,
+      "dcha": 1,
+      "total": 29
+    },
+    "2010": {
+      "attrib": 3,
+      "dcha": 0,
+      "total": 17
+    },
+    "2011": {
+      "attrib": 3,
+      "dcha": 1,
+      "total": 21
+    },
+    "2012": {
+      "attrib": 3,
+      "dcha": 1,
+      "total": 10
+    },
+    "2013": {
+      "attrib": 5,
+      "dcha": 2,
+      "total": 12
+    },
+    "2014": {
+      "attrib": 11,
+      "dcha": 6,
+      "total": 45
+    },
+    "2015": {
+      "attrib": 7,
+      "dcha": 4,
+      "total": 33
+    },
+    "2016": {
+      "attrib": 12,
+      "dcha": 3,
+      "total": 27
+    },
+    "2017": {
+      "attrib": 4,
+      "dcha": 3,
+      "total": 19
+    },
+    "2018": {
+      "attrib": 11,
+      "dcha": 2,
+      "total": 35
+    },
+    "2019": {
+      "attrib": 21,
+      "dcha": 10,
+      "total": 61
+    },
+    "2020": {
+      "attrib": 43,
+      "dcha": 6,
+      "total": 116
+    },
+    "2021": {
+      "attrib": 52,
+      "dcha": 5,
+      "total": 143
+    },
+    "2022": {
+      "attrib": 33,
+      "dcha": 3,
+      "total": 125
+    },
+    "2023": {
+      "attrib": 26,
+      "dcha": 5,
+      "total": 82
+    },
+    "2024": {
+      "attrib": 33,
+      "dcha": 8,
+      "total": 68
+    }
+  },
+  "sent_len_min": 6,
+  "sent_len_mean": 37.3,
+  "sent_len_max": 169,
+  "cause_len_min": 0,
+  "cause_len_mean": 9.1,
+  "cause_len_max": 57,
+  "effect_len_min": 0,
+  "effect_len_mean": 12.9,
+  "effect_len_max": 104,
+  "marker_cause": 19,
+  "marker_lead_to": 6,
+  "marker_contribute_to": 7,
+  "marker_result_in": 2,
+  "n_explicit_markers": 34,
+  "n_implicit": 270,
+  "pct_implicit": 89.0,
+  "n_speeches_with_candidates": 700,
+  "n_speeches_with_attrib": 278,
+  "n_speeches_with_dcha": 66,
+  "top_countries": [
+    {
+      "iso3": "FSM",
+      "dcha_count": 4,
+      "attrib_count": 6,
+      "total": 14
+    },
+    {
+      "iso3": "ATG",
+      "dcha_count": 4,
+      "attrib_count": 9,
+      "total": 16
+    },
+    {
+      "iso3": "VUT",
+      "dcha_count": 3,
+      "attrib_count": 7,
+      "total": 11
+    },
+    {
+      "iso3": "PNG",
+      "dcha_count": 2,
+      "attrib_count": 4,
+      "total": 15
+    },
+    {
+      "iso3": "SYC",
+      "dcha_count": 2,
+      "attrib_count": 5,
+      "total": 12
+    },
+    {
+      "iso3": "MUS",
+      "dcha_count": 2,
+      "attrib_count": 4,
+      "total": 5
+    },
+    {
+      "iso3": "BWA",
+      "dcha_count": 2,
+      "attrib_count": 5,
+      "total": 11
+    },
+    {
+      "iso3": "BTN",
+      "dcha_count": 2,
+      "attrib_count": 3,
+      "total": 3
+    },
+    {
+      "iso3": "NPL",
+      "dcha_count": 2,
+      "attrib_count": 4,
+      "total": 6
+    },
+    {
+      "iso3": "SUR",
+      "dcha_count": 2,
+      "attrib_count": 4,
+      "total": 10
+    },
+    {
+      "iso3": "FJI",
+      "dcha_count": 2,
+      "attrib_count": 5,
+      "total": 15
+    },
+    {
+      "iso3": "SLE",
+      "dcha_count": 2,
+      "attrib_count": 6,
+      "total": 12
+    },
+    {
+      "iso3": "PLW",
+      "dcha_count": 2,
+      "attrib_count": 6,
+      "total": 15
+    },
+    {
+      "iso3": "MCO",
+      "dcha_count": 2,
+      "attrib_count": 3,
+      "total": 5
+    },
+    {
+      "iso3": "JPN",
+      "dcha_count": 1,
+      "attrib_count": 1,
+      "total": 3
+    }
+  ],
+  "n_countries": 181,
+  "comparison": {
+    "original_period": {
+      "years": "2014-2024",
+      "n_candidates": 754,
+      "n_attrib": 253,
+      "n_dcha": 55
+    },
+    "extended_period": {
+      "years": "1989-2013",
+      "n_candidates": 153,
+      "n_attrib": 51,
+      "n_dcha": 17
+    },
+    "increase_pct": 20.3
+  }
+}

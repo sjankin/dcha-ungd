@@ -1,0 +1,865 @@
+\documentclass[sigconf,review]{acmart}
+
+\citestyle{acmnumeric}
+\settopmatter{printacmref=false,printfolios=true}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\setcopyright{none}
+
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+
+\acmConference[KDD '26]{Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining}{August 9--13, 2026}{Jeju, Korea}
+\acmBooktitle{Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD '26), August 9--13, 2026, Jeju, Korea}
+\acmYear{2026}
+\copyrightyear{2026}
+
+\title{DCHA-UNGD: An Extended Dataset and Benchmarks for Directed Climate--Health Attribution in UN General Debate Speeches, 1989--2024}
+
+\author{Hannah Bechara}
+\affiliation{
+  \institution{Data Science Lab, Hertie School}
+  \city{Berlin}
+  \country{Germany}
+}
+\email{bechara@hertie-school.org}
+
+\author{Krishnamoorthy Manohara}
+\affiliation{
+  \institution{Data Science Lab, Hertie School}
+  \city{Berlin}
+  \country{Germany}
+}
+\email{manohara@hertie-school.org}
+
+\author{Niheer Dasandi}
+\affiliation{
+  \institution{School of Government, University of Birmingham}
+  \city{Birmingham}
+  \country{United Kingdom}
+}
+\email{n.dasandi@bham.ac.uk}
+
+\author{Slava Jankin}
+\affiliation{
+  \institution{Institute for Data and AI, University of Birmingham}
+  \city{Birmingham}
+  \country{United Kingdom}
+}
+\email{v.jankin@bham.ac.uk}
+
+\begin{document}
+
+\begin{abstract}
+Reliable discourse indicators are a core input to decision-making in domains such as climate and health, yet most scalable measures still rely on co-occurrence or lexical proximity. These proxies cannot distinguish a mere co-mention of ``health'' and ``climate change'' from an asserted causal linkage, cannot recover directionality (climate $\rightarrow$ health versus health $\rightarrow$ climate action), and cannot separate harms from co-benefits. We present DCHA-UNGD (v2.0), an extended dataset and benchmark suite for Directed Climate--Health Attribution (DCHA) in elite political speech.
+
+DCHA-UNGD v2.0 extends the original 2014--2024 dataset back to 1989, covering 36 years of UN General Debate speeches (6,662 speeches from 200 member states). The extended dataset contains 907 candidate sentences with hierarchical annotations for attribution, spans, and directed linkage type. We introduce a negative control experiment using 5,000 pre-1989 sentences---a period predating climate-health discourse---to test whether frontier LLMs hallucinate causal claims where none should exist. Results reveal a striking asymmetry: while LLMs produce substantial false positives for attribution detection (1--29\%), the false positive rate for the derived DCHA indicator is near-zero ($\leq$0.1\%) across all models. This demonstrates that the two-stage DCHA construct---requiring both causal attribution \emph{and} directed climate-to-health span matching---provides an inherent safeguard against hallucination. Baselines show that fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while speech-level co-mention overestimates directed climate--health attribution by 91\%.
+
+We release annotated sentences, model-assisted pre-annotations, annotation guidelines, evaluation toolkit, and negative control data to support reuse beyond climate and health.
+\end{abstract}
+
+\keywords{datasets; benchmarks; causal relation extraction; political text; climate change; public health; UN General Debate; negative control}
+
+\maketitle
+
+\section{Introduction}
+Text-as-data indicators are widely used to quantify agenda attention and issue linkage in elite discourse, including at scale in recurring monitoring reports. However, most operationalisations of linkage still reduce to counting co-occurrence or lexical proximity between domain dictionaries. This is scalable but conceptually thin: co-mention does not imply that a speaker asserts a causal relationship, it does not encode directionality, and it does not distinguish between climate harms to health and health-framed justification for climate action.
+
+Consider two sentences from UN General Debate speeches that both contain climate and health terms:
+\begin{quote}
+\textit{(a) ``Georgia, like all present here, faces the global challenges [...] climate change, biodiversity loss, universal and accessible health, education for all [...]''} (Georgia, 2019)\\[0.5em]
+\textit{(b) ``Global warming and rains associated with climate change are expanding the geographic reach of mosquitos, thus exposing more than 170 million people to the threat of malaria.''} (Guinea-Bissau, 2024)
+\end{quote}
+A co-mention indicator treats these identically, yet only (b) asserts a causal claim---specifically, that climate change causes health harm via mosquito-borne disease. Sentence (a) merely lists challenges without attributing causation. This distinction matters for policy analysis: tracking how often leaders \emph{assert} that climate affects health differs fundamentally from tracking how often they \emph{mention} both topics.
+
+Extending to the full 1989--2024 period amplifies this problem: of 700 speeches containing within-sentence climate-health co-mentions, only 66 (9.4\%) contain directed climate$\rightarrow$health attribution---a 91\% overcount if co-mention is used as a proxy for causal framing.
+
+This paper makes two contributions beyond the original DCHA-UNGD (v1.0) dataset covering 2014--2024. First, we extend the annotated dataset back to 1989, adding 153 candidates from a period when climate-health discourse was nascent. This tripling of the temporal window enables studying the \emph{emergence} of climate-health framing in international diplomacy. Second, we introduce a negative control experiment: 5,000 sentences from pre-1989 speeches (1946--1988) are processed through frontier LLMs to measure false positive rates. Because climate-health attribution is anachronistic before 1989, any positive prediction constitutes a hallucination.
+
+\paragraph{Contributions.}
+DCHA-UNGD v2.0 makes six contributions: (1) an extended dataset spanning 1989--2024 with 907 annotated candidates; (2) a negative control protocol using 5,000 pre-1989 sentences to validate LLM specificity; (3) the finding that DCHA's two-stage construct provides near-zero false positive rates even when attribution detection alone has substantial false positives; (4) updated benchmarks with frontier LLMs (DeepSeek-R1, GPT-5.2, Claude Opus 4.5) evaluated on the full candidate set; (5) chronological splits designed to test temporal generalisation over a 36-year window; and (6) construct validation demonstrating that DCHA measures a distinct phenomenon from co-mention, with different covariate predictors.
+
+\section{Related Work}
+Our work connects three research strands: political text-as-data methods, scholarship on causal framing in policy discourse, and NLP datasets for causal relation extraction.
+
+\paragraph{Political text-as-data.}
+Political text analysis at scale has become core methodology in computational social science~\cite{grimmer2013text,gentzkow2019text}, with researchers measuring issue attention through dictionaries, topic models~\cite{roberts2014stm}, and embeddings. UN General Debate speeches are a canonical corpus for cross-national comparison~\cite{baturo2017ungdc,jankin2025words}, providing annual statements from nearly all member states. However, standard operationalisations of ``linkage'' reduce to co-occurrence, which cannot distinguish listing from causal assertion---a conflation that systematically overestimates causal framing prevalence.
+
+\paragraph{Causal stories and framing.}
+Political science emphasises that policy meaning depends on causal construction. Stone's ``causal stories''~\cite{stone1989causal} argues that actors strategically deploy causal narratives to assign blame and mobilise support. Direction matters: framing climate as \emph{causing} health harms implies different responses than framing health as \emph{justification} for climate action. Computational framing work~\cite{tsur2015frame,card2015media} typically identifies thematic frames (economic, moral, security) rather than directed causal claims. DCHA-UNGD addresses this gap with annotations capturing both attribution presence and direction.
+
+\paragraph{NLP causality datasets.}
+NLP has developed datasets for causal relation extraction, primarily in news~\cite{tan2022causalnews,tan2023recess} and general domains~\cite{khetan2023semeval}. In political text, PolitiCAUSE~\cite{garcia-corral-etal-2024-politicause} provides a causality corpus from parliamentary proceedings. DCHA-UNGD complements these efforts: rather than general-purpose detection, it targets sparse, domain-specific \emph{directed} attribution with valence categories (harm vs.\ co-benefit) and a five-way taxonomy for climate-health policy analysis.
+
+\paragraph{Dataset documentation.}
+We follow emerging best practices in dataset documentation, including data statements~\cite{bender2018datastatements}, datasheets for datasets~\cite{gebru2021datasheets}, and model cards~\cite{mitchell2019modelcards}. A full datasheet appears in Appendix~\ref{app:datasheet}.
+
+\paragraph{Positioning.}
+Table~\ref{tab:comparison} positions DCHA-UNGD relative to existing causality datasets. DCHA-UNGD is unique in combining directed linkage types, valence distinctions, and a negative control protocol in a politically significant corpus spanning 36 years.
+
+\begin{table}[t]
+\caption[Comparison with related causality datasets]{Comparison with related causality datasets. DCHA-UNGD uniquely combines political domain, directed linkage types, valence distinctions, and a negative control protocol. Sentence counts refer to annotated instances with causal labels, not total corpus size.$^{*}$}
+\label{tab:comparison}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Dataset & Domain & Sent. & Spans & Dir. & Val. & Neg.\ Ctrl. \\
+\midrule
+CausalNews~\cite{tan2022causalnews} & News & 3,458 & \checkmark & -- & -- & -- \\
+RECESS~\cite{tan2023recess} & News & 2,500 & \checkmark & -- & -- & -- \\
+SemEval-23~\cite{khetan2023semeval} & General & 1,331 & \checkmark & -- & -- & -- \\
+PolitiCAUSE~\cite{garcia-corral-etal-2024-politicause} & Political & 2,466$^{*}$ & \checkmark & -- & -- & -- \\
+\midrule
+DCHA-UNGD v2.0 & Political & 907 & \checkmark & \checkmark & \checkmark & \checkmark \\
+\bottomrule
+\end{tabular}
+\vspace{1mm}
+\raggedright\footnotesize{$^{*}$PolitiCAUSE contains 17,780 total sentences; 2,466 is the subset with causal relation annotations.}
+\end{table}
+
+\section{Source Corpus and Candidate Construction}
+
+\subsection{Source corpus}
+We draw on the UN General Debate corpus~\cite{baturo2017ungdc,jankin2025words}. Our processed corpus covers 1989--2024 and contains 6,662 speeches from 200 member states, extending the original 2014--2024 window (2,012 speeches, 185 states) back to the emergence of climate-health discourse.
+
+\subsection{Sentence segmentation}
+We segment speeches into sentences using NLTK's Punkt tokenizer~\cite{bird2009nlp}. We retain offsets to enable traceability from candidate sentences back to the original speech text.
+
+\subsection{Lexicons and candidate extraction}
+Candidate selection mirrors common indicator practice: we identify \emph{within-sentence} co-mentions of a climate lexicon (DC) and a health lexicon (DH), adapted from Lancet Countdown work~\cite{romanello2025lancet}. A sentence is a candidate if it contains at least one DC term and at least one DH term. This yields 907 candidate sentences from the 1989--2024 period, of which 754 come from 2014--2024 (matching v1.0) and 153 from 1989--2013.
+
+The lexicons contain 34 DC terms (e.g., ``climate change'', ``global warming'') and 28 DH terms (e.g., ``health'', ``disease'', ``mortality''). Full lexicons appear in Appendix~\ref{app:lexicons}.
+
+\paragraph{Speech-level baselines.}
+For comparability, we compute two speech-level baselines: \emph{co-mention} (COM): a speech contains at least one DC and DH term anywhere; and \emph{proximity} (PROX): a speech contains DC and DH mentions within a fixed token window.
+
+\subsection{Negative control corpus}
+For the negative control experiment (\S\ref{sec:negative_control}), we additionally extract candidates from the 1946--1988 period. This pre-climate-discourse era provides sentences that happen to contain both climate and health terms (e.g., ``political climate'' near ``health of the economy'') but where directed climate-health attribution is anachronistic. We sample 5,000 such sentences, stratified by decade: 1940s ($n=112$), 1950s ($n=589$), 1960s ($n=1{,}265$), 1970s ($n=1{,}451$), 1980s ($n=1{,}583$).
+
+\section{Annotation Protocol}
+
+Figure~\ref{fig:examples} illustrates the annotation schema with examples.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig4_examples.pdf}
+\caption{Example annotations from DCHA-UNGD. Each candidate sentence is labelled with a directed linkage type and annotated with CAUSE and EFFECT spans.}
+\label{fig:examples}
+\end{figure}
+
+\subsection{Label schema}
+We use a hierarchical scheme designed for sparse directed attribution.
+
+\paragraph{Level 1: Attribution presence (ATTRIB).}
+A candidate is labelled ATTRIB=1 if it contains an attributional causal claim connecting a cause and effect. Otherwise ATTRIB=0.
+
+\paragraph{Level 1 spans: CAUSE and EFFECT.}
+For ATTRIB=1 sentences, annotators provide contiguous text spans for cause and effect.
+
+\paragraph{Level 2: Directed linkage type.}
+Each candidate is assigned a directed linkage type: (i) climate impacts $\rightarrow$ health harms (C$\rightarrow$H\_HARM); (ii) climate action $\rightarrow$ health co-benefits (C$\rightarrow$H\_COBEN); (iii) health justification for climate action (H$\rightarrow$C\_JUST); (iv) other/unclear (OTHER/UNCLEAR); (v) no causal extraction (NO\_CAUSAL\_EXTRACTION).
+
+\paragraph{Derived indicator: DCHA.}
+We provide a derived flag DCHA=1 if ATTRIB=1, the CAUSE span contains a DC term, and the EFFECT span contains a DH term. This two-stage definition---requiring both causal attribution \emph{and} directional span matching---is central to the negative control findings reported in \S\ref{sec:negative_control}.
+
+\subsection{Model-assisted post-editing workflow}
+A RoBERTa model trained on PolitiCAUSE~\cite{garcia-corral-etal-2024-politicause} proposes ATTRIB and candidate spans. A trained annotator post-edits the model output. We release both pre-edit and post-edited labels.
+
+\subsection{Annotation quality}
+To assess annotation quality, a second expert annotator independently coded a random sample of 100 candidates from the 2014--2024 dataset. For causal attribution presence (\texttt{ATTRIB}), Cohen's $\kappa=0.42$ (raw agreement 71\%), indicating moderate agreement consistent with the inherent difficulty of distinguishing causal attribution from co-mention in political speech~\cite{artstein2008inter}. Disagreements concentrate on borderline cases: metaphorical causation (``the world is crumbling under the weight of crises''), policy-as-causation (``the Organisation helped build a resilient Pacific''), and listing sentences where causes are enumerated without explicit causal argument. For the 35 candidates where both annotators agreed on \texttt{ATTRIB}=1, token-level F1 for cause and effect spans was 0.80 and 0.79 respectively (median $>$0.95), indicating that once annotators agree a sentence is causal, they largely concur on span boundaries. The primary annotator's labels serve as the released gold standard.
+
+\section{Dataset Description}
+
+\subsection{Release artefacts}
+DCHA-UNGD (v2.0) is released as:
+\begin{itemize}[leftmargin=*,nosep]
+\item \texttt{dcha\_ungd\_candidates.csv}: 907 candidates with gold labels (1989--2024);
+\item \texttt{dcha\_ungd\_negative\_control.csv}: 5,000 pre-1989 candidates for negative control;
+\item \texttt{dcha\_ungd\_preedit.csv}: model-assisted pre-annotations;
+\item \texttt{dcha\_ungd\_splits.json}: official chronological splits;
+\item \texttt{dcha\_ungd\_covariates.csv}: speech-level covariates for validation (Appendix~\ref{app:covariates});
+\item \texttt{lexicons\_dc\_dh.json}: versioned lexicons;
+\item \texttt{eval/}: evaluation scripts;
+\item \texttt{docs/}: annotation guidelines and datasheet.
+\end{itemize}
+
+\subsection{Descriptive statistics}
+Table~\ref{tab:stats} reports high-level counts for both the annotated dataset and the negative control corpus.
+
+\begin{table}[t]
+\caption{Summary statistics for DCHA-UNGD (v2.0).}
+\label{tab:stats}
+\begin{tabular}{@{}l r@{}}
+\toprule
+\multicolumn{2}{@{}l}{\textit{Annotated dataset (1989--2024)}} \\
+Time span & 1989--2024 \\
+Speeches (country-year) & 6,662 \\
+Member states & 200 \\
+Candidate sentences & 907 \\
+Attribution present (ATTRIB=1) & 304 \\
+Derived DCHA=1 & 72 \\
+\midrule
+\multicolumn{2}{@{}l}{\textit{Negative control corpus (1946--1988)}} \\
+Time span & 1946--1988 \\
+Speeches (country-year) & 4,277 \\
+Negative control candidates & 5,000 \\
+Expected ATTRIB/DCHA & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Label distribution.}
+Table~\ref{tab:labels} shows the distribution across directed linkage types. Two-thirds of candidates (603, 66.5\%) contain no causal claim despite lexical co-mention. Among causal candidates, ``other/unclear'' linkages (240, 26.5\%) dominate. The directed categories are rare: 52 instances (5.7\%) frame climate as causing health harms, 7 (0.8\%) as co-benefits, and 5 (0.6\%) as health-justifying climate action.
+
+\begin{table}[t]
+\caption{Label distribution across directed linkage types.}
+\label{tab:labels}
+\small
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Linkage type & Count & \% \\
+\midrule
+NO\_CAUSAL\_EXTRACTION & 603 & 66.5 \\
+OTHER\_UNCLEAR & 240 & 26.5 \\
+C2H\_HARM & 52 & 5.7 \\
+C2H\_COBEN & 7 & 0.8 \\
+H2C\_JUST & 5 & 0.6 \\
+\midrule
+Total & 907 & 100.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Temporal emergence.}
+The extended time window reveals the emergence of climate-health attribution in diplomatic discourse. The 153 candidates from 1989--2013 include 51 with ATTRIB=1 and 17 with DCHA=1, showing that directed climate-health framing appeared sporadically before accelerating in the mid-2010s. Of the 907 total candidates, 83\% (754) come from 2014--2024, reflecting the sharp increase in climate-health co-mention following the Paris Agreement (2015) and during the COVID-19 pandemic (2020--2021).
+
+\subsection{Regional patterns}
+DCHA distribution is concentrated among Small Island Developing States and climate-vulnerable nations: Micronesia and Antigua and Barbuda lead (4 DCHA mentions each), followed by Vanuatu (3), with SIDS dominating the top 15 countries (Appendix~\ref{app:countries}). Major emitters rarely use directed causal framing. This pattern is consistent with the construct validation finding (\S\ref{sec:validation}) that vulnerability---not size or wealth---predicts DCHA usage.
+
+\subsection{Linguistic characteristics}
+Sentences average 37 tokens; cause spans (mean 9.1 tokens) tend to be shorter than effect spans (mean 13.0). The majority (89\%) of attributions use implicit causal constructions without explicit lexical markers, relying on syntactic patterns or hedged language (``poses threats to'', ``exacerbates'')---making the task challenging for lexicon-based approaches. Detailed statistics and marker counts appear in Appendix~\ref{app:linguistic}.
+
+\subsection{Construct validation}
+\label{sec:validation}
+A key claim of this paper is that DCHA captures something distinct from co-mention---not merely a noisier version of co-occurrence. We test this claim using panel regression analysis.
+
+\paragraph{Speech-level indicator.}
+We aggregate sentence-level annotations to speech-level binary indicators. For each speech $(i,t)$ by country $i$ in year $t$, we define: COM$_{it}=1$ if the speech contains any climate-health co-mention; ATTRIB$_{it}=1$ if any candidate sentence has ATTRIB=1; and DCHA$_{it}=1$ if any sentence satisfies the DCHA criterion. Technical details on indicator construction appear in Appendix~\ref{app:indicator}.
+
+\paragraph{Covariates.}
+We merge speech-level indicators with country-year covariates from external sources (Appendix~\ref{app:covariates}): climate vulnerability and health vulnerability indices from ND-GAIN~\cite{ndgain_country_index}, CO$_2$ emissions per capita~\cite{owid_co2}, and GDP per capita and population from World Development Indicators~\cite{worldbank_wdi}. All covariates are standardised (mean=0, SD=1) for comparability.
+
+\paragraph{Estimation.}
+We estimate panel linear probability models with country fixed effects:
+\[
+Y_{it} = \alpha_i + \mathbf{X}_{it}'\boldsymbol{\beta} + \varepsilon_{it}
+\]
+where $Y_{it} \in \{\text{COM}, \text{ATTRIB}, \text{DCHA}\}$, $\alpha_i$ captures time-invariant country heterogeneity, and $\mathbf{X}_{it}$ contains standardised covariates. Standard errors are clustered at the country level.
+
+\paragraph{Results.}
+Table~\ref{tab:validation} reports results for the 2014--2024 subset. Population (ln) is highly significant for COM ($\beta=2.11$, $p<0.001$) and ATTRIB ($\beta=1.88$, $p<0.001$), but not for DCHA ($\beta=-0.05$, $p=0.94$). Similarly, GDP per capita predicts COM and ATTRIB but not DCHA. Only vulnerability remains marginally significant for DCHA ($\beta=-0.53$, $p=0.04$). The joint F-test for DCHA is non-significant ($F=1.40$, $p=0.22$).
+
+\begin{table}[t]
+\caption{Panel linear probability models with country fixed effects (2014--2024). Standard errors clustered at country level in parentheses. Covariates standardised for comparability.}
+\label{tab:validation}
+\small
+\begin{tabular}{@{}l ccc@{}}
+\toprule
+ & COM & ATTRIB & DCHA \\
+\midrule
+Vulnerability & $-$0.561$^{***}$ & $-$0.564$^{***}$ & $-$0.526$^{*}$ \\
+ & (0.142) & (0.153) & (0.261) \\[0.3em]
+Health vulnerability & $-$0.055 & $-$0.047 & 0.022 \\
+ & (0.111) & (0.105) & (0.152) \\[0.3em]
+ln(CO$_2$/capita) & $-$0.160 & $-$0.139 & 0.023 \\
+ & (0.101) & (0.092) & (0.134) \\[0.3em]
+ln(GDP/capita) & 0.077$^{**}$ & 0.032$^{**}$ & $-$0.082 \\
+ & (0.029) & (0.010) & (0.208) \\[0.3em]
+ln(Population) & 2.111$^{***}$ & 1.883$^{***}$ & $-$0.046 \\
+ & (0.415) & (0.374) & (0.658) \\
+\midrule
+Country FE & Yes & Yes & Yes \\
+N & 1,844 & 1,244 & 412 \\
+Countries & 169 & 114 & 38 \\
+R$^2$ (within) & 0.046 & 0.054 & 0.019 \\
+F-statistic & 16.10$^{***}$ & 12.72$^{***}$ & 1.40 \\
+\bottomrule
+\end{tabular}
+\vspace{1mm}
+\raggedright\footnotesize{$^{*}p<0.05$; $^{**}p<0.01$; $^{***}p<0.001$.}
+\end{table}
+
+\paragraph{Interpretation.}
+These ``coverage'' variables---population and GDP---capture that larger and wealthier countries mention both climate and health more frequently, but they do not predict whether leaders frame climate as \emph{causing} health harm. Only vulnerability significantly predicts DCHA: more climate-vulnerable countries are more likely to articulate directed causal framing, consistent with SIDS and Sub-Saharan Africa leading in DCHA usage (Table~\ref{tab:countries}). DCHA thus captures substantive framing choices shaped by lived experience of climate-health risks, not merely topic coverage.
+
+\section{Benchmark Tasks and Evaluation}
+
+\subsection{Official splits}
+We provide a chronological split spanning the full 36-year window:
+\begin{itemize}[leftmargin=*,nosep]
+\item Train: 1989--2021 ($n=632$)
+\item Development: 2022 ($n=125$)
+\item Test: 2023--2024 ($n=150$)
+\end{itemize}
+
+The train set subsumes all pre-2014 candidates ($n=153$) and the original 2014--2021 training data ($n=479$), testing whether additional historical examples improve temporal generalisation.
+
+\subsection{Tasks}
+\paragraph{Task A: Attribution detection.} Predict ATTRIB $\in \{0,1\}$.
+\paragraph{Task B: Cause span extraction.} Extract the cause span.
+\paragraph{Task C: Effect span extraction.} Extract the effect span.
+\paragraph{Task D: Directed linkage classification.} Predict the linkage type.
+\paragraph{Task E: DCHA detection.} Predict the derived DCHA flag.
+
+\subsection{Baselines}
+We evaluate three baseline approaches: (1) zero-shot transfer from PolitiCAUSE RoBERTa~\cite{garcia-corral-etal-2024-politicause}, a model trained on political causality data; (2) fine-tuning PolitiCAUSE on the DCHA training set; and (3) frontier LLMs with structured output (detailed in \S\ref{sec:llm_baselines} and Appendix~\ref{app:llm}).
+
+\section{Baseline Results}
+
+Table~\ref{tab:baselines} reports baseline performance on the test set ($n=150$).
+
+\begin{table}[t]
+\caption{RoBERTa baselines on test set (2023--2024). Fine-tuning on in-domain data yields a +32 point F1 improvement over zero-shot transfer.}
+\label{tab:baselines}
+\begin{tabular}{@{}l l r r r r@{}}
+\toprule
+Task & Model & P & R & F1 & Acc \\
+\midrule
+Attrib (A) & Majority (all 0) & 0.00 & 0.00 & 0.00 & 0.61 \\
+Attrib (A) & PolitiCAUSE (zero-shot) & 0.72 & 0.36 & 0.48 & 0.69 \\
+Attrib (A) & RoBERTa (fine-tuned) & 0.70 & \textbf{0.92} & \textbf{0.79} & \textbf{0.81} \\
+\midrule
+DCHA (E) & Majority (all 0) & 0.00 & 0.00 & 0.00 & 0.90 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Discussion.}
+Zero-shot transfer from PolitiCAUSE correctly identifies 21 of 29 predicted positives (high precision) but misses 38 of 59 true positives (low recall), suggesting caution about predicting causality in diplomatic language. Fine-tuning on in-domain DCHA data dramatically improves performance: recall increases from 36\% to 92\%, and F1 improves by 32 points (0.48$\to$0.79). The fine-tuned model achieves the highest recall of any baseline, detecting 54 of 59 true attributions.
+
+\paragraph{Span extraction.}
+Table~\ref{tab:spans} reports span extraction results on attribution-positive test sentences ($n=59$). PolitiCAUSE achieves poor zero-shot span extraction due to domain mismatch, while DeepSeek-R1 achieves substantially better performance (15$\times$ improvement on cause spans).
+
+\begin{table}[t]
+\caption{Span extraction on attribution-positive test sentences ($n=59$). Fine-tuned RoBERTa matches DeepSeek-R1.}
+\label{tab:spans}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Model & Cause F1 & Effect F1 \\
+\midrule
+PolitiCAUSE (zero-shot) & 0.047 & 0.130 \\
+RoBERTa (fine-tuned) & 0.665 & \textbf{0.758} \\
+DeepSeek-R1 (zero-shot) & \textbf{0.714} & 0.710 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Domain transfer challenges.}
+The poor PolitiCAUSE zero-shot performance reflects systematic differences between training and target domains. PolitiCAUSE was trained on parliamentary debates with explicit causal language (``because'', ``therefore'', ``as a result''). UN General Debate speeches use more diplomatic hedging (``may contribute to'', ``poses threats to''), implicit causal constructions embedded in noun phrases, and complex multi-clause sentences averaging 37 tokens. The 15$\times$ span extraction gap suggests that diplomatic language requires either in-domain fine-tuning or models with stronger reasoning capabilities to disambiguate causal relations.
+
+\subsection{Unified baseline comparison}
+\label{sec:llm_baselines}
+Table~\ref{tab:llm_baselines} provides a unified comparison across all baseline approaches on the test set: majority class prediction, zero-shot transfer from PolitiCAUSE, in-domain fine-tuning, and three frontier LLMs with structured output. We evaluate attribution detection (Task A), DCHA detection (Task E), span extraction (Tasks B/C), and directed linkage classification (Task D).
+
+\begin{table}[t]
+\caption{Unified baseline comparison on test set (n=150). Best overall in bold; best among LLMs underlined. Fine-tuned RoBERTa matches frontier LLM performance with 632 training examples.}
+\label{tab:llm_baselines}
+\small
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Model & Type & Attrib F1 & DCHA F1 & Span F1 & Link F1 \\
+\midrule
+Majority & --- & 0.000 & 0.000 & 0.000 & 0.151 \\
+PolitiCAUSE & zero-shot & 0.477 & 0.000 & 0.089 & 0.224 \\
+RoBERTa & fine-tuned & \textbf{0.794} & \textbf{0.741} & 0.712 & 0.409 \\
+\midrule
+DeepSeek-R1 & zero-shot & \underline{0.803} & \underline{0.720} & \underline{\textbf{0.712}} & \underline{\textbf{0.453}} \\
+GPT-5.2 & zero-shot & 0.748 & 0.696 & 0.572 & 0.399 \\
+Claude Opus 4 & zero-shot & 0.447 & 0.571 & 0.247 & 0.308 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Discussion.}
+DeepSeek-R1, a reasoning-augmented model, outperforms other frontier LLMs across all tasks on the test set, likely due to its explicit chain-of-thought reasoning that methodically analyses whether a sentence asserts causation or merely lists topics. The models exhibit instructive precision-recall variation: Claude Opus 4 achieves perfect precision (100\%) but low recall (29\%), while DeepSeek-R1 achieves the best balance (78\% precision, 83\% recall). Different applications may prefer different operating points.
+
+\paragraph{Fine-tuning vs.\ LLMs.}
+Fine-tuned RoBERTa matches or exceeds frontier LLM performance across most tasks using only 632 training examples. For attribution detection, fine-tuned RoBERTa (F1=0.79) approaches DeepSeek-R1 (F1=0.80) and outperforms GPT-5.2 (0.75) and Claude Opus 4 (0.45). For DCHA detection, fine-tuned RoBERTa \emph{outperforms} all LLMs (F1=0.74 vs.\ 0.72 for DeepSeek-R1). Only on directed linkage classification does DeepSeek-R1 retain an advantage (F1=0.45 vs.\ 0.41). This demonstrates that modest in-domain annotation can match frontier LLM performance at a fraction of the inference cost.
+
+\paragraph{Error analysis.}
+The fine-tuned model's 5 false negatives reveal challenging edge cases: sentences where causal language is embedded in listing contexts (``crises caused by climate change, organised criminal gangs, the prospect of new health emergencies''), uses nominal constructions (``the impact of climate change on human health''), or employs subtle markers (``threaten'', appositive ``with''). The 23 false positives occur when the model over-predicts attribution for sentences discussing challenges together without asserting causation, or when hedged language like ``exacerbated by'' appears in close proximity to climate and health terms. These error patterns align with the linguistic characteristics noted in \S5.4: 89\% of attributions use implicit constructions, making the boundary between causal framing and topical listing inherently ambiguous.
+
+\section{Negative Control Experiment}
+\label{sec:negative_control}
+
+A central question for deploying LLM-based causal extraction at scale is \emph{specificity}: how often does a model hallucinate causal claims where none exist? Standard benchmarks measure performance on held-out data from the same distribution, but cannot assess behaviour on inputs where the target construct is genuinely absent. We address this gap using the pre-1989 negative control corpus described in \S3.4: any positive ATTRIB or DCHA prediction on these 5,000 sentences constitutes a false positive.
+
+\subsection{Results}
+Table~\ref{tab:negative_control} reports false positive rates for three frontier LLMs.
+
+\begin{table}[t]
+\caption{Negative control: false positive rates on 5,000 pre-1989 sentences. Any ATTRIB or DCHA prediction = hallucination. DCHA false positive rate is near-zero across all models.}
+\label{tab:negative_control}
+\small
+\begin{tabular}{@{}l rr rr@{}}
+\toprule
+ & \multicolumn{2}{c}{ATTRIB FP} & \multicolumn{2}{c}{DCHA FP} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Model & Count & Rate & Count & Rate \\
+\midrule
+GPT-5.2 & 1,427 & 28.5\% & 0 & 0.00\% \\
+DeepSeek-R1 & 991 & 19.8\% & 1 & 0.02\% \\
+Claude Opus 4.5 & 52 & 1.0\% & 5 & 0.10\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key finding: DCHA specificity.}
+The results reveal a clear asymmetry between ATTRIB and DCHA false positive rates. GPT-5.2 predicts attribution in 28.5\% of pre-1989 sentences---hallucinating causal claims in historical text that discusses ``health of the economy'' near ``political climate.'' DeepSeek-R1 produces 19.8\% false positives. These rates would compromise any monitoring system relying on ATTRIB alone.
+
+However, the derived DCHA indicator is remarkably robust: GPT-5.2 produces \emph{zero} DCHA false positives, DeepSeek-R1 produces 1 (0.02\%), and Claude Opus 4.5 produces 5 (0.10\%). Even when LLMs hallucinate attribution, they rarely hallucinate \emph{directed climate-to-health} linkage in text that does not discuss climate change in its modern sense.
+
+Figure~\ref{fig:sensitivity_specificity} visualises the sensitivity-specificity tradeoff across models, and Figure~\ref{fig:fp_by_decade} shows that ATTRIB false positive rates are stable across decades (1940s--1980s), indicating that the hallucination pattern is consistent rather than concentrated in any particular era.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_sensitivity_specificity.pdf}
+\caption{Sensitivity-specificity tradeoff for attribution detection across LLMs. Claude Opus 4.5 achieves near-perfect specificity (99.0\%) but low sensitivity (40.8\%); GPT-5.2 achieves the highest sensitivity (70.1\%) but lowest specificity (71.5\%). All models achieve $>$99.9\% DCHA specificity (not shown).}
+\label{fig:sensitivity_specificity}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_fp_by_decade.pdf}
+\caption{Attribution false positive rates by decade in the negative control corpus. Rates are stable across decades, indicating consistent hallucination patterns rather than era-specific confounds.}
+\label{fig:fp_by_decade}
+\end{figure}
+
+\paragraph{Implications.}
+A monitoring system that tracks ATTRIB alone would require careful calibration to handle 20--30\% false positives. In contrast, a system tracking DCHA can be deployed with high confidence: the two-stage construct acts as a built-in specificity filter. This suggests that hierarchical indicator designs---where coarse detection is refined by domain-specific classification---may be broadly valuable for text-as-data applications.
+
+\section{Extended LLM Evaluation}
+\label{sec:extended_llm}
+
+Beyond the test-set comparison in \S7, we evaluate three frontier LLMs on the full candidate set ($n=907$) to provide comprehensive performance estimates across the full temporal range. We use updated models: DeepSeek-R1 (few-shot), GPT-5.2 (few-shot), and Claude Opus 4.5 (zero-shot). Details on prompting variants and model versions appear in Appendix~\ref{app:llm}.
+
+\subsection{Attribution detection (Task A)}
+Table~\ref{tab:task_a} reports precision, recall, and F1 for attribution detection on the full candidate set.
+
+\begin{table}[t]
+\caption{Attribution detection (Task A) on full candidate set ($n=907$). GPT-5.2 achieves the best F1 balance; Claude Opus 4.5 is the most conservative.}
+\label{tab:task_a}
+\small
+\begin{tabular}{@{}l ccc cc@{}}
+\toprule
+Model & P & R & F1 & Sens. & Spec. \\
+\midrule
+GPT-5.2 & 0.745 & 0.701 & 0.722 & 0.701 & 0.715 \\
+DeepSeek-R1 & 0.712 & 0.674 & 0.693 & 0.674 & 0.802 \\
+Claude Opus 4.5 & 0.729 & 0.408 & 0.523 & 0.408 & 0.990 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{DCHA detection (Task E)}
+Table~\ref{tab:task_e} reports DCHA detection performance on the full candidate set.
+
+\begin{table}[t]
+\caption{DCHA detection (Task E) on full candidate set ($n=907$).}
+\label{tab:task_e}
+\small
+\begin{tabular}{@{}l ccc@{}}
+\toprule
+Model & P & R & F1 \\
+\midrule
+GPT-5.2 & 0.672 & 0.672 & 0.672 \\
+DeepSeek-R1 & 0.505 & 0.766 & 0.609 \\
+Claude Opus 4.5 & 0.406 & 0.812 & 0.542 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Directed linkage classification (Task D)}
+Table~\ref{tab:task_d} reports per-class performance on directed linkage classification across the full candidate set.
+
+\begin{table}[t]
+\caption{Directed linkage classification (Task D) per-class F1 on full candidate set. All models achieve reasonable performance on majority classes but struggle with rare directed categories.}
+\label{tab:task_d}
+\small
+\begin{tabular}{@{}l ccc@{}}
+\toprule
+Link type & GPT-5.2 & DeepSeek-R1 & Claude 4.5 \\
+\midrule
+NO\_CAUSAL ($n=603$) & 0.866 & 0.851 & 0.831 \\
+OTHER ($n=240$) & 0.615 & 0.566 & 0.184 \\
+C2H\_HARM ($n=52$) & 0.704 & 0.699 & 0.570 \\
+C2H\_COBEN ($n=7$) & 0.615 & 0.556 & 0.381 \\
+H2C\_JUST ($n=5$) & 0.286 & 0.100 & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Discussion.}
+Figure~\ref{fig:task_performance} provides a visual comparison. The precision-recall tradeoffs observed on the test set (\S7) persist at full-dataset scale: GPT-5.2 achieves the best F1 balance (Task A: 0.722, Task E: 0.672), while Claude Opus 4.5 remains highly conservative (specificity 99.0\%, recall 40.8\%). A notable full-dataset finding is that Claude Opus 4.5 achieves the highest DCHA recall (81.2\%) despite its low attribution recall---suggesting that when it does detect attribution, it is effective at identifying directed linkage. For directed linkage classification, C2H\_HARM achieves F1 of 0.70 (GPT-5.2 and DeepSeek-R1), while H2C\_JUST ($n=5$) remains essentially undetectable across all models.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_task_performance.pdf}
+\caption{LLM performance comparison across Tasks A, E, and D. GPT-5.2 achieves the best overall balance; Claude Opus 4.5 trades recall for high specificity.}
+\label{fig:task_performance}
+\end{figure}
+
+\subsection{Temporal stability}
+Figure~\ref{fig:temporal_performance} examines whether LLM performance varies across the temporal range. We compute Task A F1 by period: 1989--2013 (new candidates), 2014--2021 (original training period), 2022 (development year), and 2023--2024 (test period).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_temporal_performance.pdf}
+\caption{Task A (attribution detection) F1 by time period. Performance is stable or slightly higher on pre-2014 candidates, suggesting that earlier speeches contain more prototypical causal constructions.}
+\label{fig:temporal_performance}
+\end{figure}
+
+All three models achieve their highest F1 on the 1989--2013 period (GPT-5.2: 0.753, DeepSeek-R1: 0.737, Claude Opus 4.5: 0.683). This may reflect that early climate-health sentences tend to use more explicit causal markers (``climate change causes,'' ``leads to disease''), while recent speeches employ subtler constructions embedded in complex diplomatic language. The temporal stability validates the extended dataset: models do not suffer degradation when applied to the earlier period.
+
+\section{Limitations}
+DCHA-UNGD is intentionally narrow: it targets directed attribution between climate and health in elite speech, conditioned on within-sentence co-mention. The dataset size is modest (907 candidates, 72 DCHA positives), reflecting genuine sparsity rather than annotation budget constraints. The test set contains limited instances of the rarest directed categories (12 C$\rightarrow$H\_HARM, 1 H$\rightarrow$C\_JUST, 0 C$\rightarrow$H\_COBEN); results on these classes should be interpreted as establishing initial baselines rather than definitive rankings. The benchmark's value lies in evaluating domain transfer, few-shot learning, and indicator construction methodology.
+
+The negative control design assumes that pre-1989 sentences cannot contain genuine climate-health attribution. While this is well-motivated---the IPCC was established in 1988 and climate-health framing emerged subsequently---isolated early references to environmental health effects are theoretically possible. The near-zero DCHA false positive rate suggests this is not a practical concern.
+
+The inter-annotator agreement study ($\kappa=0.42$) reflects the genuine difficulty of the annotation task in diplomatic text rather than annotation quality limitations. Both annotators were expert coders with experience in causal language analysis. Annotation of the full dataset was performed by the primary annotator, whose labels serve as the gold standard.
+
+\section{Ethics and Responsible Release}
+The dataset is derived from publicly available UN speech transcripts~\cite{baturo2017ungdc,jankin2025words}. We release under CC BY 4.0 with code under MIT License.
+
+\section{Conclusion}
+DCHA-UNGD v2.0 extends the original dataset to 1989--2024, tripling the temporal window. Two findings stand out. First, the negative control experiment demonstrates that DCHA's two-stage construct provides an inherent safeguard against LLM hallucination: DCHA false positive rates remain below 0.1\% even when attribution false positives reach 29\%. This suggests that hierarchical indicator designs---combining coarse detection with domain-specific classification---may broadly improve the reliability of text-as-data measures. Second, fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while construct validation confirms that DCHA captures substantively different information than co-mention across the full 36-year window. We release the extended dataset, negative control corpus, and evaluation toolkit to support both NLP benchmarking and policy indicator development.
+
+\begin{acks}
+This project has received funding from the European Union's Horizon Europe research and innovation program under Grant Agreement No 101057131, Climate Action To Advance HeaLthY Societies in Europe (CATALYSE).
+\end{acks}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\appendix
+
+\section{Indicator Construction}
+\label{app:indicator}
+We aggregate sentence-level annotations to speech-level indicators using a simple maximum rule: for each speech $(i,t)$, the indicator $Y_{it}=1$ if \emph{any} candidate sentence in that speech satisfies the criterion. Formally:
+\[
+\text{DCHA}_{it} = \max_{s \in S_{it}} \mathbf{1}[\text{DCHA}_s = 1]
+\]
+where $S_{it}$ is the set of candidate sentences in speech $(i,t)$. The same aggregation applies for COM and ATTRIB.
+
+This binary indicator captures whether a country made \emph{any} directed climate-health attribution claim in a given year. For applications requiring continuous measures, a Bayesian approach can model uncertainty when $n_{it}$ (number of candidates) is small:
+\[
+k_{it} \sim \mathrm{Binomial}(n_{it}, p_{it}), \quad
+p_{it} \sim \mathrm{Beta}(\alpha,\beta)
+\]
+where $k_{it}$ is the count of DCHA=1 sentences. The posterior mean $\hat{p}_{it}$ provides a shrinkage estimator that regularises estimates for speeches with few candidates.
+
+\section{Covariates}
+\label{app:covariates}
+We provide speech-level covariates merged from three external sources:
+
+\paragraph{ND-GAIN Country Index~\cite{ndgain_country_index}.}
+The Notre Dame Global Adaptation Initiative provides composite indices measuring climate vulnerability and readiness. We use: (i) \emph{vulnerability}, capturing exposure, sensitivity, and adaptive capacity to climate change; and (ii) \emph{health vulnerability}, a sector-specific sub-index measuring projected health impacts from climate change.
+
+\paragraph{Our World in Data~\cite{owid_co2}.}
+Annual CO$_2$ emissions per capita (tonnes), derived from territorial emissions accounting.
+
+\paragraph{World Development Indicators~\cite{worldbank_wdi}.}
+GDP per capita (constant 2015 US\$) and total population.
+
+All continuous covariates are log-transformed (ln) before standardisation to reduce skewness. The merged panel covers 200 countries observed annually from 1989--2024 ($N=6{,}662$ speech-years), with complete covariate coverage for all observations used in the validation analysis.
+
+\section{LLM Baseline Protocol}
+\label{app:llm}
+
+\subsection{Models}
+We evaluate frontier LLMs in two rounds. For the test-set comparison (\S7), we use models from v1.0: DeepSeek-R1, GPT-5.2, and Claude Opus 4. For the extended full-dataset evaluation (\S9), we use updated models: DeepSeek-R1 (\texttt{deepseek-reasoner}), GPT-5.2 (\texttt{gpt-5.2}), and Claude Opus 4.5 (\texttt{claude-opus-4-5-20251101}). All models are accessed via their respective APIs. A fourth model, Google Gemini 3 Pro Preview, was included in v1.0 but excluded from the extended evaluation due to API quota failures affecting 95.8\% of calls (5,657/5,907).
+
+\subsection{Prompt design}
+We use structured JSON output with a schema specifying: (i) \texttt{has\_causal\_claim} (boolean); (ii) \texttt{cause\_span} (string); (iii) \texttt{effect\_span} (string); (iv) \texttt{link\_type} (enum). The system prompt provides task definitions and the five-way linkage type taxonomy. We set temperature=0 for deterministic outputs.
+
+\subsection{Prompt template}
+The system prompt defines the task and link type taxonomy:
+
+\begin{verbatim}
+You are an information extraction system.
+Task: Given one sentence, decide whether it
+asserts a causal attribution. If yes: extract
+CAUSE and EFFECT spans as exact substrings.
+Then assign a directed linkage type.
+
+Definitions:
+- NO_CAUSAL_EXTRACTION: no causal claim
+- C2H_HARM: climate causes health harm
+- C2H_COBEN: climate action improves health
+- H2C_JUST: health justifies climate action
+- OTHER_UNCLEAR: causal but ambiguous type
+\end{verbatim}
+
+The user prompt provides the sentence and requests JSON output with fields: \texttt{attrib}, \texttt{cause\_span}, \texttt{effect\_span}, \texttt{link\_type}, \texttt{rationale\_short}.
+
+\subsection{Evaluation protocol}
+For the extended evaluation, we process all 907 post-1989 candidates plus 5,000 pre-1989 negative control sentences in a single combined run ($N=5{,}907$). This design provides: (i) comprehensive performance estimates across the full temporal range; (ii) negative control false positive rates; and (iii) efficient token usage by processing all candidates in one pass. We report post-1989 performance metrics and pre-1989 false positive rates separately.
+
+\subsection{Variants}
+We test two variants: (i) \emph{zero-shot}: schema and instructions only; (ii) \emph{few-shot}: three annotated examples from the training set. Few-shot examples cover positive and negative cases across linkage types. For the extended evaluation, DeepSeek-R1 and GPT-5.2 use few-shot prompting; Claude Opus 4.5 uses zero-shot, as few-shot prompting was found to slightly degrade performance in v1.0.
+
+\subsection{Few-shot examples}
+The few-shot variant uses five training examples covering all linkage types:
+
+\begin{enumerate}[leftmargin=*,nosep]
+\item \textbf{NO\_CAUSAL}: ``By that I mean globalization, inequality, war and internal conflict, as well as extremism, migration flows and climate change, and even health crises...'' $\rightarrow$ Lists challenges without causal assertion.
+\item \textbf{C2H\_HARM}: ``...climate change is also likely to increase poverty and various diseases...'' $\rightarrow$ Climate causes health harm.
+\item \textbf{C2H\_COBEN}: ``...policies combating climate change and preserving air quality in order to safeguard health...'' $\rightarrow$ Climate action improves health.
+\item \textbf{H2C\_JUST}: ``Our success in preventing future pandemics will depend on the attention and resources we devote to fighting climate change!'' $\rightarrow$ Health outcomes justify climate action.
+\item \textbf{OTHER}: ``...sustainable development... can be realized only through international peace and security.'' $\rightarrow$ Causal but not direct climate-health.
+\end{enumerate}
+
+\subsection{Reliability}
+Table~\ref{tab:llm_reliability} reports output reliability. DeepSeek-R1, GPT-5.2, and Claude Opus 4.5 produce valid JSON for all inputs. Gemini 3 Pro (tested in v1.0 only) showed 32.7\% invalid outputs.
+
+\begin{table}[h]
+\caption{LLM output reliability.}
+\label{tab:llm_reliability}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Model & Invalid JSON (\%) & Empty Response (\%) \\
+\midrule
+DeepSeek-R1 & 0.0 & 0.0 \\
+GPT-5.2 & 0.0 & 0.0 \\
+Claude Opus 4/4.5 & 0.0 & 0.0 \\
+Gemini 3 Pro (v1.0) & 32.7 & 32.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Detailed per-class results}
+Table~\ref{tab:llm_detailed} reports full per-class precision and recall for directed linkage classification on the full candidate set ($n=907$).
+
+\begin{table}[h]
+\caption{Detailed per-class precision (P) and recall (R) for Task D (full candidate set).}
+\label{tab:llm_detailed}
+\small
+\begin{tabular}{@{}l cc cc cc@{}}
+\toprule
+ & \multicolumn{2}{c}{GPT-5.2} & \multicolumn{2}{c}{DeepSeek-R1} & \multicolumn{2}{c}{Claude 4.5} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+Link type & P & R & P & R & P & R \\
+\midrule
+NO\_CAUSAL & .853 & .879 & .840 & .862 & .756 & .924 \\
+OTHER & .640 & .592 & .639 & .508 & .619 & .108 \\
+C2H\_HARM & .679 & .731 & .606 & .827 & .416 & .904 \\
+C2H\_COBEN & .667 & .571 & .455 & .714 & .286 & .571 \\
+H2C\_JUST & .500 & .200 & .067 & .200 & .000 & .000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Negative control details by decade}
+Table~\ref{tab:fp_decades} breaks down attribution false positive rates by decade in the pre-1989 corpus.
+
+\begin{table}[h]
+\caption{Attribution false positive rates by decade in the negative control corpus.}
+\label{tab:fp_decades}
+\small
+\begin{tabular}{@{}l r ccc@{}}
+\toprule
+Decade & $n$ & GPT-5.2 & DeepSeek-R1 & Claude 4.5 \\
+\midrule
+1940s & 112 & 25.9\% & 14.3\% & 1.8\% \\
+1950s & 589 & 30.2\% & 21.4\% & 0.5\% \\
+1960s & 1,265 & 28.0\% & 18.0\% & 0.9\% \\
+1970s & 1,451 & 28.6\% & 21.2\% & 1.0\% \\
+1980s & 1,583 & 28.5\% & 19.8\% & 1.3\% \\
+\midrule
+All & 5,000 & 28.5\% & 19.8\% & 1.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Computational cost}
+Table~\ref{tab:cost} reports token usage and latency for the extended evaluation runs ($N=5{,}907$).
+
+\begin{table}[h]
+\caption{LLM computational cost (extended evaluation, $N=5{,}907$).}
+\label{tab:cost}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Model & Input & Output & Total & Latency \\
+ & tokens & tokens & tokens & (ms/call) \\
+\midrule
+DeepSeek-R1 & 6.8M & 6.4M & 13.3M & 34,500 \\
+GPT-5.2 & 7.0M & 390K & 7.4M & 1,600 \\
+Claude Opus 4.5 & 2.7M & 597K & 3.3M & 3,100 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+DeepSeek-R1 and GPT-5.2 use few-shot prompting, which adds ${\sim}750$ tokens of system prompt and examples per call, accounting for their higher input token totals. DeepSeek-R1's chain-of-thought reasoning generates substantial output tokens; its higher latency (35s/call vs.\ 2--3s for GPT-5.2 and Claude) resulted in a total processing time of approximately 2.5 days, compared to 2.5--5 hours for the other models.
+
+\subsection{Error analysis examples}
+Table~\ref{tab:error_examples} shows representative error cases from the test set.
+
+\begin{table}[h]
+\caption{Representative error cases on test set.}
+\label{tab:error_examples}
+\small
+\begin{tabular}{@{}p{5cm}p{1.2cm}p{1.2cm}@{}}
+\toprule
+Sentence (truncated) & Gold & Pred \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{False negative (DeepSeek-R1 misses):}} \\
+``Climate change poses a major threat to...food security and health.'' & C2H\_HARM & NO\_CAUSAL \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{False positive (GPT-5.2 over-predicts):}} \\
+``We must address climate change, health, and poverty together.'' & NO\_CAUSAL & OTHER \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Linkage type confusion:}} \\
+``Investing in clean energy improves air quality and public health.'' & C2H\_COBEN & OTHER \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Common error patterns include: (i) listing contexts misclassified as causal; (ii) implicit causation missed when effects are embedded in noun phrases; (iii) co-benefit framing confused with harm framing when the sentence mentions both.
+
+\section{Linguistic Characteristics}
+\label{app:linguistic}
+Table~\ref{tab:linguistic} reports linguistic statistics for candidates and spans. The wide span length ranges (1--57 for cause, 1--104 for effect) indicate heterogeneous causal constructions, from minimal markers to complex multi-clause attributions.
+
+\begin{table}[h]
+\caption{Linguistic statistics for DCHA-UNGD candidates and spans.}
+\label{tab:linguistic}
+\small
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Measure & Min & Mean & Max \\
+\midrule
+Sentence length (tokens) & 6 & 37.3 & 169 \\
+Cause span length & 1 & 9.1 & 57 \\
+Effect span length & 1 & 13.0 & 104 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Causal markers.}
+Common explicit markers include ``cause/causes/caused'' (19 instances), ``lead/leads/leading to'' (6), ``contribute/contributes to'' (7), and ``result/results in'' (2). However, 89\% of attributions use implicit constructions without these lexical markers, relying on syntactic patterns, hedged language (``poses threats to'', ``exacerbates''), or world knowledge.
+
+\section{Country-Level DCHA Distribution}
+\label{app:countries}
+Table~\ref{tab:countries} disaggregates DCHA mentions to country level. SIDS (FSM, ATG, VUT, PLW, FJI, SUR, MUS, SYC) dominate the top 15, suggesting direct experience of climate-health risks shapes rhetorical framing.
+
+\begin{table}[h]
+\caption{Top 15 countries by DCHA mentions (all years).}
+\label{tab:countries}
+\small
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Country & DCHA & Attrib & Total \\
+\midrule
+Micronesia (FSM) & 4 & 6 & 14 \\
+Antigua and Barbuda (ATG) & 4 & 9 & 16 \\
+Vanuatu (VUT) & 3 & 7 & 11 \\
+Papua New Guinea (PNG) & 2 & 4 & 15 \\
+Seychelles (SYC) & 2 & 5 & 12 \\
+Mauritius (MUS) & 2 & 4 & 5 \\
+Botswana (BWA) & 2 & 5 & 11 \\
+Bhutan (BTN) & 2 & 3 & 3 \\
+Nepal (NPL) & 2 & 4 & 6 \\
+Suriname (SUR) & 2 & 4 & 10 \\
+Fiji (FJI) & 2 & 5 & 15 \\
+Sierra Leone (SLE) & 2 & 6 & 12 \\
+Palau (PLW) & 2 & 6 & 15 \\
+Monaco (MCO) & 2 & 3 & 5 \\
+Japan (JPN) & 1 & 1 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Datasheet}
+\label{app:datasheet}
+Following~\citet{gebru2021datasheets}, we provide a datasheet documenting the motivation, composition, collection process, intended uses, and maintenance plan for DCHA-UNGD.
+
+\subsection{Motivation}
+DCHA-UNGD supports research on causal relation extraction in political text, specifically directed climate-health attribution---relevant to policy monitoring and indicators beyond co-occurrence. The gap between co-mention and actual causal framing motivated this benchmark.
+
+Created by researchers at Hertie School (Berlin) and University of Birmingham as part of CATALYSE, funded by EU Horizon Europe Grant No.\ 101057131.
+
+\subsection{Composition}
+907 candidate sentences from UN General Debate speeches (1989--2024), selected via within-sentence co-mention of climate and health terms. Not a random sample---intentionally enriched for potential attribution, though 67\% contain no causal claim.
+
+Each instance has: binary attribution flag (ATTRIB); cause/effect spans (if ATTRIB=1); five-way linkage type; derived DCHA flag for directed climate$\rightarrow$health attribution.
+
+Additionally, 5,000 pre-1989 sentences serve as a negative control corpus for validating model specificity.
+
+Chronological splits: train 1989--2021 ($n=632$), dev 2022 ($n=125$), test 2023--2024 ($n=150$)---ensuring models are evaluated on future speeches.
+
+Some span boundaries may be imprecise for complex sentences. We release both gold and model-assisted pre-annotations.
+
+\subsection{Collection process}
+Source: UN General Debate Corpus~\cite{baturo2017ungdc,jankin2025words}, 1989--2024 (6,662 speeches, 200 states).
+
+Annotation: model-assisted post-editing. PolitiCAUSE-trained RoBERTa~\cite{garcia-corral-etal-2024-politicause} proposed initial annotations; human annotator reviewed and corrected per guidelines. Inter-annotator agreement assessed on 100-candidate subsample ($\kappa=0.42$).
+
+\subsection{Intended uses and limitations}
+Intended for: benchmarking causal extraction on political text; domain transfer evaluation; indicator methodology research; negative control validation of LLM-based extraction systems.
+
+\emph{Not} for real-time monitoring without human verification. The modest size and class imbalance mean predictions on rare categories require expert review.
+
+\subsection{Distribution and access}
+Data: CC BY 4.0. Code: MIT License. GitHub repository with DOI.
+
+\subsection{Maintenance}
+Annual updates planned as new UNGD speeches become available. Current version: v2.0. Contact: corresponding author.
+
+\section{Full Lexicons}
+\label{app:lexicons}
+The climate (DC) and health (DH) lexicons used for candidate extraction.
+
+\paragraph{Climate lexicon (DC, 34 terms):}
+climate change, changing climate, climate emergency, climate crisis, climate decay, global warming, green house, temperature, extreme weather, global environmental change, climate variability, greenhouse, greenhouse-gas, low carbon, ghge, ghges, renewable energy, carbon emission, carbon emissions, carbon dioxide, carbon-dioxide, co2 emission, co2 emissions, climate pollutant, climate pollutants, decarbonization, decarbonisation, carbon neutral, carbon-neutral, carbon neutrality, climate neutrality, climate action, net-zero, net zero.
+
+\paragraph{Health lexicon (DH, 28 terms):}
+malaria, diarrhoea, infection, disease, diseases, sars, measles, pneumonia, epidemic, epidemics, pandemic, pandemics, epidemiology, healthcare, health, mortality, morbidity, nutrition, illness, illnesses, ncd, ncds, air pollution, malnutrition, malnourishment, mental disorder, mental disorders, stunting.
+
+\paragraph{Matching rules:}
+Terms are matched as case-insensitive substrings.
+
+\section{Annotation Edge Cases}
+\label{app:edge_cases}
+Table~\ref{tab:edge_cases} illustrates difficult annotation decisions. These patterns challenge both human annotators and automated systems.
+
+\begin{table}[h]
+\caption{Annotation edge cases with detailed rationale.}
+\label{tab:edge_cases}
+\small
+\begin{tabular}{@{}p{4.2cm}p{1.3cm}p{2cm}@{}}
+\toprule
+Sentence pattern & Decision & Rationale \\
+\midrule
+``Climate change and health are challenges we face.'' & NO\_CAUSAL & Enumerative listing of parallel challenges without asserting any relationship between them. \\
+\midrule
+``Climate change poses threats to health.'' & C2H\_HARM & The verb phrase ``poses threats to'' implies a causal mechanism: climate change brings about negative health consequences. Implicit causation. \\
+\midrule
+``Health of the ocean is affected by climate.'' & OTHER & Contains a valid causal claim, but ``ocean health'' refers to ecosystem state, not human health outcomes. \\
+\midrule
+``For health reasons, we support climate action.'' & H2C\_JUST & The prepositional phrase ``for health reasons'' indicates health concerns serve as justification for climate action. Direction is health$\rightarrow$climate. \\
+\midrule
+``Climate and health policies must work together.'' & NO\_CAUSAL & Asserts policy coordination, not causation. Normative statement about governance. \\
+\midrule
+``Climate change may contribute to the spread of disease.'' & C2H\_HARM & Despite hedging (``may''), asserts a probabilistic causal pathway. Hedged language still constitutes attribution. \\
+\midrule
+``We must protect health and fight climate change.'' & NO\_CAUSAL & Parallel imperative structure listing two goals. No causal relationship asserted. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{General principles.}
+Several principles guide edge case resolution: (1) \emph{Listing vs.\ attribution}: Conjunctions like ``and'' or comma-separated enumerations typically indicate listing unless accompanied by causal verbs or prepositional phrases; (2) \emph{Hedged language}: Modal verbs (``may'', ``could'', ``might'') or probability markers do not negate attribution---they hedge the certainty but preserve the causal claim; (3) \emph{Direction matters}: The same two concepts can appear in different causal directions, and annotators must identify which element is positioned as cause vs.\ effect; (4) \emph{Human vs.\ other health}: References to ``planetary health'', ``ocean health'', or ``ecosystem health'' are coded as OTHER unless they explicitly connect to human health outcomes.
+
+\end{document}

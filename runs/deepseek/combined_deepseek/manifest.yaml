@@ -1,0 +1,35 @@
+run_name: combined_deepseek
+provider: deepseek
+model: deepseek-reasoner
+api: chat.completions
+response_format:
+  type: json_schema
+  strict: false
+temperature: 0
+max_tokens: 256
+prompt_version: v1
+prompt_version_hash: aace6193
+variant: fewshot
+fewshot: true
+split: test
+code_git_commit: unknown
+run_datetime_utc: '2026-02-09T01:16:42.624453Z'
+dataset_version: dcha_ungd_v1
+n_candidates: 5907
+max_repairs: 2
+reliability_stats:
+  total_candidates: 5907
+  invalid_json_count: 277
+  repair_count: 98
+  invalid_span_count: 36
+  empty_content_count: 143
+  invalid_json_rate: 0.04689351616725918
+  repair_rate: 0.01659048586422888
+  invalid_span_rate: 0.006094464195022855
+  empty_content_rate: 0.024208566108007448
+usage_stats:
+  total_tokens_input: 6835201
+  total_tokens_output: 6445939
+  total_tokens: 13281140
+  total_latency_ms: 203960028.52797508
+  avg_latency_ms: 34528.530307766225

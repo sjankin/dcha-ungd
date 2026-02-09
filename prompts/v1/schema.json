@@ -1,0 +1,19 @@
+{
+  "name": "dcha_extraction",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "attrib": { "type": "boolean" },
+      "cause_span": { "type": ["string", "null"] },
+      "effect_span": { "type": ["string", "null"] },
+      "link_type": {
+        "type": "string",
+        "enum": ["NO_CAUSAL_EXTRACTION", "OTHER_UNCLEAR", "C2H_HARM", "C2H_COBEN", "H2C_JUST"]
+      },
+      "rationale_short": { "type": "string" }
+    },
+    "required": ["attrib", "cause_span", "effect_span", "link_type", "rationale_short"],
+    "additionalProperties": false
+  }
+}

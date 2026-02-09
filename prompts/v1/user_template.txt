@@ -1,0 +1,4 @@
+Sentence: "{SENTENCE}"
+
+Return a single JSON object with fields:
+attrib, cause_span, effect_span, link_type, rationale_short

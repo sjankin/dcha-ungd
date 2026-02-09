@@ -1,0 +1,40 @@
+{
+  "run_name": "combined_gpt5",
+  "provider": "openai",
+  "model": "gpt-5.2",
+  "api": "chat.completions",
+  "response_format": {
+    "type": "json_schema",
+    "strict": true
+  },
+  "temperature": 0,
+  "max_tokens": 256,
+  "prompt_version": "v1",
+  "prompt_version_hash": "aace6193",
+  "variant": "fewshot",
+  "fewshot": true,
+  "split": "test",
+  "code_git_commit": "unknown",
+  "run_datetime_utc": "2026-02-06T19:14:59.395847Z",
+  "dataset_version": "dcha_ungd_v1",
+  "n_candidates": 5907,
+  "max_repairs": 2,
+  "reliability_stats": {
+    "total_candidates": 5907,
+    "invalid_json_count": 30,
+    "repair_count": 30,
+    "invalid_span_count": 0,
+    "empty_content_count": 0,
+    "invalid_json_rate": 0.005078720162519045,
+    "repair_rate": 0.005078720162519045,
+    "invalid_span_rate": 0.0,
+    "empty_content_rate": 0.0
+  },
+  "usage_stats": {
+    "total_tokens_input": 7020948,
+    "total_tokens_output": 390202,
+    "total_tokens": 7411150,
+    "total_latency_ms": 9463708.871126175,
+    "avg_latency_ms": 1602.1176351999618
+  }
+}

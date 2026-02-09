@@ -1,0 +1,28 @@
+malaria
+diarrhoea
+infection
+disease
+diseases
+sars
+measles
+pneumonia
+epidemic
+epidemics
+pandemic
+pandemics
+epidemiology
+healthcare
+health
+mortality
+morbidity
+nutrition
+illness
+illnesses
+ncd
+ncds
+air pollution
+malnutrition
+malnourishment
+mental disorder
+mental disorders
+stunting

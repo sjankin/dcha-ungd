@@ -55,7 +55,7 @@ Reliable discourse indicators are a core input to decision-making in domains suc
 
 DCHA-UNGD v2.0 extends the original 2014--2024 dataset back to 1989, covering 36 years of UN General Debate speeches (6,662 speeches from 200 member states). The extended dataset contains 907 candidate sentences with hierarchical annotations for attribution, spans, and directed linkage type. We introduce a negative control experiment using 5,000 pre-1989 sentences---a period predating climate-health discourse---to test whether frontier LLMs hallucinate causal claims where none should exist. Results reveal a striking asymmetry: while LLMs produce substantial false positives for attribution detection (1--29\%), the false positive rate for the derived DCHA indicator is near-zero ($\leq$0.1\%) across all models. This demonstrates that the two-stage DCHA construct---requiring both causal attribution \emph{and} directed climate-to-health span matching---provides an inherent safeguard against hallucination. Baselines show that fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while speech-level co-mention overestimates directed climate--health attribution by 91\%.
 
-We release annotated sentences, model-assisted pre-annotations, annotation guidelines, evaluation toolkit, and negative control data to support reuse beyond climate and health.
+We release annotated sentences, model-assisted pre-annotations, annotation guidelines, evaluation toolkit, and negative control data to support reuse beyond climate and health.\footnote{Code and data: \url{https://github.com/sjankin/dcha-ungd}}
 \end{abstract}
 
 \keywords{datasets; benchmarks; causal relation extraction; political text; climate change; public health; UN General Debate; negative control}
@@ -171,7 +171,7 @@ To assess annotation quality, a second expert annotator independently coded a ra
 \section{Dataset Description}
 
 \subsection{Release artefacts}
-DCHA-UNGD (v2.0) is released as:
+DCHA-UNGD (v2.0) is released at \url{https://github.com/sjankin/dcha-ungd} and contains:
 \begin{itemize}[leftmargin=*,nosep]
 \item \texttt{dcha\_ungd\_candidates.csv}: 907 candidates with gold labels (1989--2024);
 \item \texttt{dcha\_ungd\_negative\_control.csv}: 5,000 pre-1989 candidates for negative control;

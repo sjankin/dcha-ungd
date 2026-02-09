@@ -14,7 +14,7 @@
 \acmYear{2026}
 \copyrightyear{2026}
 
-\title{DCHA-UNGD: An Extended Dataset and Benchmarks for Directed Climate--Health Attribution in UN General Debate Speeches, 1989--2024}
+\title{DCHA-UNGD: A Dataset and Benchmarks for Directed Climate--Health Attribution in UN General Debate Speeches, 1989--2024}
 
 \author{Hannah Bechara}
 \affiliation{
@@ -51,9 +51,9 @@
 \begin{document}
 
 \begin{abstract}
-Reliable discourse indicators are a core input to decision-making in domains such as climate and health, yet most scalable measures still rely on co-occurrence or lexical proximity. These proxies cannot distinguish a mere co-mention of ``health'' and ``climate change'' from an asserted causal linkage, cannot recover directionality (climate $\rightarrow$ health versus health $\rightarrow$ climate action), and cannot separate harms from co-benefits. We present DCHA-UNGD (v1.0), an extended dataset and benchmark suite for Directed Climate--Health Attribution (DCHA) in elite political speech.
+Reliable discourse indicators are a core input to decision-making in domains such as climate and health, yet most scalable measures still rely on co-occurrence or lexical proximity. These proxies cannot distinguish a mere co-mention of ``health'' and ``climate change'' from an asserted causal linkage, cannot recover directionality (climate $\rightarrow$ health versus health $\rightarrow$ climate action), and cannot separate harms from co-benefits. We present DCHA-UNGD (v1.0), a dataset and benchmark suite for Directed Climate--Health Attribution (DCHA) in elite political speech.
 
-DCHA-UNGD v1.0 extends the original 2014--2024 dataset back to 1989, covering 36 years of UN General Debate speeches (6,662 speeches from 200 member states). The extended dataset contains 907 candidate sentences with hierarchical annotations for attribution, spans, and directed linkage type. We introduce a negative control experiment using 5,000 pre-1989 sentences---a period predating climate-health discourse---to test whether frontier LLMs hallucinate causal claims where none should exist. Results reveal a striking asymmetry: while LLMs produce substantial false positives for attribution detection (1--29\%), the false positive rate for the derived DCHA indicator is near-zero ($\leq$0.1\%) across all models. This demonstrates that the two-stage DCHA construct---requiring both causal attribution \emph{and} directed climate-to-health span matching---provides an inherent safeguard against hallucination. Baselines show that fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while speech-level co-mention overestimates directed climate--health attribution by 91\%.
+DCHA-UNGD covers 36 years of UN General Debate speeches (1989--2024; 6,662 speeches from 200 member states). The dataset contains 907 candidate sentences with hierarchical annotations for attribution, spans, and directed linkage type. We introduce a negative control experiment using 5,000 pre-1989 sentences---a period predating climate-health discourse---to test whether frontier LLMs hallucinate causal claims where none should exist. Results reveal a striking asymmetry: while LLMs produce substantial false positives for attribution detection (1--29\%), the false positive rate for the derived DCHA indicator is near-zero ($\leq$0.1\%) across all models. This demonstrates that the two-stage DCHA construct---requiring both causal attribution \emph{and} directed climate-to-health span matching---provides an inherent safeguard against hallucination. Baselines show that fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while speech-level co-mention overestimates directed climate--health attribution by 91\%.
 
 We release annotated sentences, model-assisted pre-annotations, annotation guidelines, evaluation toolkit, and negative control data to support reuse beyond climate and health.\footnote{Code and data: \url{https://github.com/sjankin/dcha-ungd}}
 \end{abstract}
@@ -74,10 +74,10 @@ A co-mention indicator treats these identically, yet only (b) asserts a causal c
 
 Extending to the full 1989--2024 period amplifies this problem: of 700 speeches containing within-sentence climate-health co-mentions, only 66 (9.4\%) contain directed climate$\rightarrow$health attribution---a 91\% overcount if co-mention is used as a proxy for causal framing.
 
-This paper makes two contributions beyond an initial pilot dataset covering 2014--2024. First, we extend the annotated dataset back to 1989, adding 153 candidates from a period when climate-health discourse was nascent. This tripling of the temporal window enables studying the \emph{emergence} of climate-health framing in international diplomacy. Second, we introduce a negative control experiment: 5,000 sentences from pre-1989 speeches (1946--1988) are processed through frontier LLMs to measure false positive rates. Because climate-health attribution is anachronistic before 1989, any positive prediction constitutes a hallucination.
+This paper makes two contributions. First, we provide an annotated dataset spanning 1989--2024, covering the full arc from nascent climate-health discourse to today. The 36-year temporal window enables studying the \emph{emergence} of climate-health framing in international diplomacy. Second, we introduce a negative control experiment: 5,000 sentences from pre-1989 speeches (1946--1988) are processed through frontier LLMs to measure false positive rates. Because climate-health attribution is anachronistic before 1989, any positive prediction constitutes a hallucination.
 
 \paragraph{Contributions.}
-DCHA-UNGD v1.0 makes six contributions: (1) an extended dataset spanning 1989--2024 with 907 annotated candidates; (2) a negative control protocol using 5,000 pre-1989 sentences to validate LLM specificity; (3) the finding that DCHA's two-stage construct provides near-zero false positive rates even when attribution detection alone has substantial false positives; (4) updated benchmarks with frontier LLMs (DeepSeek-R1, GPT-5.2, Claude Opus 4.5) evaluated on the full candidate set; (5) chronological splits designed to test temporal generalisation over a 36-year window; and (6) construct validation demonstrating that DCHA measures a distinct phenomenon from co-mention, with different covariate predictors.
+DCHA-UNGD makes six contributions: (1) a dataset spanning 1989--2024 with 907 annotated candidates; (2) a negative control protocol using 5,000 pre-1989 sentences to validate LLM specificity; (3) the finding that DCHA's two-stage construct provides near-zero false positive rates even when attribution detection alone has substantial false positives; (4) benchmarks with frontier LLMs (DeepSeek-R1, GPT-5.2, Claude Opus 4.5) evaluated on the full candidate set; (5) chronological splits designed to test temporal generalisation over a 36-year window; and (6) construct validation demonstrating that DCHA measures a distinct phenomenon from co-mention, with different covariate predictors.
 
 \section{Related Work}
 Our work connects three research strands: political text-as-data methods, scholarship on causal framing in policy discourse, and NLP datasets for causal relation extraction.
@@ -120,7 +120,7 @@ DCHA-UNGD v1.0 & Political & 907 & \checkmark & \checkmark & \checkmark & \check
 \section{Source Corpus and Candidate Construction}
 
 \subsection{Source corpus}
-We draw on the UN General Debate corpus~\cite{baturo2017ungdc,jankin2025words}. Our processed corpus covers 1989--2024 and contains 6,662 speeches from 200 member states, extending the original 2014--2024 window (2,012 speeches, 185 states) back to the emergence of climate-health discourse.
+We draw on the UN General Debate corpus~\cite{baturo2017ungdc,jankin2025words}. Our processed corpus covers 1989--2024 and contains 6,662 speeches from 200 member states, spanning from the emergence of climate-health discourse to the present.
 
 \subsection{Sentence segmentation}
 We segment speeches into sentences using NLTK's Punkt tokenizer~\cite{bird2009nlp}. We retain offsets to enable traceability from candidate sentences back to the original speech text.
@@ -302,7 +302,7 @@ We provide a chronological split spanning the full 36-year window:
 \item Test: 2023--2024 ($n=150$)
 \end{itemize}
 
-The train set subsumes all pre-2014 candidates ($n=153$) and the original 2014--2021 training data ($n=479$), testing whether additional historical examples improve temporal generalisation.
+The train set includes pre-2014 candidates ($n=153$) alongside 2014--2021 data ($n=479$), testing whether historical examples improve temporal generalisation.
 
 \subsection{Tasks}
 \paragraph{Task A: Attribution detection.} Predict ATTRIB $\in \{0,1\}$.
@@ -510,7 +510,7 @@ Figure~\ref{fig:task_performance} provides a visual comparison. The precision-re
 \end{figure}
 
 \subsection{Temporal stability}
-Figure~\ref{fig:temporal_performance} examines whether LLM performance varies across the temporal range. We compute Task A F1 by period: 1989--2013 (new candidates), 2014--2021 (original training period), 2022 (development year), and 2023--2024 (test period).
+Figure~\ref{fig:temporal_performance} examines whether LLM performance varies across the temporal range. We compute Task A F1 by period: 1989--2013, 2014--2021 (training period), 2022 (development year), and 2023--2024 (test period).
 
 \begin{figure}[t]
 \centering
@@ -532,7 +532,7 @@ The inter-annotator agreement study ($\kappa=0.42$) reflects the genuine difficu
 The dataset is derived from publicly available UN speech transcripts~\cite{baturo2017ungdc,jankin2025words}. We release under CC BY 4.0 with code under MIT License.
 
 \section{Conclusion}
-DCHA-UNGD v1.0 extends the original dataset to 1989--2024, tripling the temporal window. Two findings stand out. First, the negative control experiment demonstrates that DCHA's two-stage construct provides an inherent safeguard against LLM hallucination: DCHA false positive rates remain below 0.1\% even when attribution false positives reach 29\%. This suggests that hierarchical indicator designs---combining coarse detection with domain-specific classification---may broadly improve the reliability of text-as-data measures. Second, fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while construct validation confirms that DCHA captures substantively different information than co-mention across the full 36-year window. We release the extended dataset, negative control corpus, and evaluation toolkit to support both NLP benchmarking and policy indicator development.
+DCHA-UNGD provides a 36-year dataset (1989--2024) for directed climate-health attribution. Two findings stand out. First, the negative control experiment demonstrates that DCHA's two-stage construct provides an inherent safeguard against LLM hallucination: DCHA false positive rates remain below 0.1\% even when attribution false positives reach 29\%. This suggests that hierarchical indicator designs---combining coarse detection with domain-specific classification---may broadly improve the reliability of text-as-data measures. Second, fine-tuned RoBERTa matches frontier LLM performance with 632 training examples, while construct validation confirms that DCHA captures substantively different information than co-mention across the full 36-year window. We release the extended dataset, negative control corpus, and evaluation toolkit to support both NLP benchmarking and policy indicator development.
 
 \begin{acks}
 This project has received funding from the European Union's Horizon Europe research and innovation program under Grant Agreement No 101057131, Climate Action To Advance HeaLthY Societies in Europe (CATALYSE).

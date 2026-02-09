@@ -2,13 +2,13 @@
 
 Dataset and replication materials for:
 
-> **DCHA-UNGD: An Extended Dataset and Benchmarks for Directed Climate-Health Attribution in UN General Debate Speeches, 1989-2024**
+> **DCHA-UNGD: A Dataset and Benchmarks for Directed Climate-Health Attribution in UN General Debate Speeches, 1989-2024**
 > Hannah Bechara, Krishnamoorthy Manohara, Niheer Dasandi, Slava Jankin.
 > KDD 2026 (Datasets & Benchmarks Track).
 
 ## Overview
 
-DCHA-UNGD v1.0 is an extended dataset and benchmark suite for **Directed Climate-Health Attribution (DCHA)** in elite political speech. It provides:
+DCHA-UNGD v1.0 is a dataset and benchmark suite for **Directed Climate-Health Attribution (DCHA)** in elite political speech. It provides:
 
 - **907 annotated candidate sentences** from UN General Debate speeches (1989-2024) with hierarchical labels for attribution presence, cause/effect spans, and directed linkage type (5-way taxonomy)
 - **5,000 negative control sentences** from pre-1989 speeches (1946-1988), where climate-health attribution is anachronistic
@@ -159,7 +159,7 @@ Pre-computed LLM predictions are provided in `runs/` for verification without re
 
 ```bibtex
 @inproceedings{bechara2026dcha,
-  title     = {{DCHA-UNGD}: An Extended Dataset and Benchmarks for Directed
+  title     = {{DCHA-UNGD}: A Dataset and Benchmarks for Directed
                Climate--Health Attribution in {UN} General Debate Speeches,
                1989--2024},
   author    = {Bechara, Hannah and Manohara, Krishnamoorthy and
